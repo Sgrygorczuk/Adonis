@@ -1,0 +1,4 @@
+#Mon Jan 25 10:28:37 EST 2021
+base.0=/home/sebastian/Projects/LibGDX_Personal/Adonis/android/build/intermediates/dex/debug/mergeDexDebug/classes.dex
+path.0=classes.dex
+renamed.0=classes.dex

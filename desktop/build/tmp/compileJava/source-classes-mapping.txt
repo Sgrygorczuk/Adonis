@@ -1,0 +1,2 @@
+com/mygdx/adonis/desktop/DesktopLauncher.java
+ com.mygdx.adonis.desktop.DesktopLauncher

@@ -1,0 +1,14 @@
+com/mygdx/adonis/Adonis.java
+ com.mygdx.adonis.Adonis
+com/mygdx/adonis/MenuScreen.java
+ com.mygdx.adonis.MenuScreen
+ com.mygdx.adonis.MenuScreen$1
+ com.mygdx.adonis.MenuScreen$2
+com/mygdx/adonis/MainScreen.java
+ com.mygdx.adonis.MainScreen
+ com.mygdx.adonis.MainScreen$1
+ com.mygdx.adonis.MainScreen$2
+ com.mygdx.adonis.MainScreen$3
+ com.mygdx.adonis.MainScreen$4
+com/mygdx/adonis/LoadingScreen.java
+ com.mygdx.adonis.LoadingScreen
