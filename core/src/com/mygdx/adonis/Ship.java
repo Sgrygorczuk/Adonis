@@ -39,8 +39,7 @@ public abstract class Ship {
     // TODO change velocity depending on game stuff
     public void update(float delta) {
         for (AddOn addOn : this.addOns) {
-            // TODO: Comment out when AddOn is completed
-            // addOn.update(delta);
+             addOn.update(delta);
         }
 
         float newX = hitbox.getX() + (velocity.x * delta);
@@ -51,8 +50,7 @@ public abstract class Ship {
 
     public void draw(SpriteBatch spriteBatch) {
         for (AddOn addOn : this.addOns) {
-            // TODO: Comment out when AddOn is completed
-            // addOn.draw(spriteBatch);
+             addOn.draw(spriteBatch);
         }
 
         spriteBatch.draw(this.texture, this.hitbox.x, this.hitbox.y, TILE_WIDTH, TILE_HEIGHT);

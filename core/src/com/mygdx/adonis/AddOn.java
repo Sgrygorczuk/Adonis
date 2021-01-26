@@ -5,7 +5,7 @@ import com.badlogic.gdx.math.Rectangle;
 
 
 
-public class AddOn {
+public abstract class AddOn {
     public Rectangle hitbox;
 
     // TODO position relative to ship?
@@ -20,7 +20,7 @@ public class AddOn {
         this.name = name;
     }
 
-//    public abstract void update(float delta);
-//
-//    public abstract void draw(SpriteBatch spriteBatch);
+    public abstract void update(float delta);
+
+    public abstract void draw(SpriteBatch spriteBatch);
 }
