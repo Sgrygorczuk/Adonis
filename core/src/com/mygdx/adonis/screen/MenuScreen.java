@@ -1,4 +1,4 @@
-package com.mygdx.adonis;
+package com.mygdx.adonis.screen;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
@@ -20,12 +20,12 @@ import com.badlogic.gdx.scenes.scene2d.utils.ActorGestureListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.mygdx.adonis.Adonis;
+
+import static com.mygdx.adonis.Consts.WORLD_HEIGHT;
+import static com.mygdx.adonis.Consts.WORLD_WIDTH;
 
 public class MenuScreen extends ScreenAdapter{
-    //Screen Dimensions
-    private static final float WORLD_WIDTH = 480;
-    private static final float WORLD_HEIGHT = 320;
-
     //Visual objects
     private SpriteBatch batch = new SpriteBatch();			 //Batch that holds all of the textures
     private Viewport viewport;

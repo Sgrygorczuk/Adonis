@@ -2,6 +2,7 @@ package com.mygdx.adonis;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.assets.AssetManager;
+import com.mygdx.adonis.screen.LoadingScreen;
 
 public class Adonis extends Game {
 
@@ -19,7 +20,7 @@ public class Adonis extends Game {
     Output: Asset Manager
     Purpose: Returns asset manager with all its data
     */
-    AssetManager getAssetManager() { return assetManager; }
+    public AssetManager getAssetManager() { return assetManager; }
 
     /*
     Input: Void

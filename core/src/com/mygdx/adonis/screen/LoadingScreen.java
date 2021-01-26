@@ -1,9 +1,8 @@
-package com.mygdx.adonis;
+package com.mygdx.adonis.screen;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.assets.loaders.BitmapFontLoader;
-import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
@@ -14,6 +13,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.mygdx.adonis.Adonis;
 
 public class LoadingScreen extends ScreenAdapter{
     //Screen Dimensions
@@ -42,7 +42,7 @@ public class LoadingScreen extends ScreenAdapter{
     Output: Void
     Purpose: Grabs the info from main screen that holds asset manager
     */
-    LoadingScreen(Adonis adonis) { this.adonis = adonis;}
+    public LoadingScreen(Adonis adonis) { this.adonis = adonis;}
 
     /*
     Input: Dimensions
@@ -98,7 +98,6 @@ public class LoadingScreen extends ScreenAdapter{
 
         //Loading all of the SFX
         adonis.getAssetManager().load("SFX/Pop.wav", Sound.class);
-
 
     }
 
