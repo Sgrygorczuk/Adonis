@@ -75,6 +75,7 @@ public enum AddOnData {
         switch(this.name){
             case "GUN":
                 // Fire Gun
+                print("Hello World!");
                 break;
             case "LASER_GUN":
                 // Fire Laser Gun if required energy is met

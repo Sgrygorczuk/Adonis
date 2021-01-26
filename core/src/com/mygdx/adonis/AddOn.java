@@ -16,7 +16,6 @@ public class AddOn {
     public AddOn(int id, String name){
         this.id = id;
         this.name = name;
-        this.data = new AddOnData(id, name);
     }
 
 //    public abstract void update(float delta);
