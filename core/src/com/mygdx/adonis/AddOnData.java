@@ -19,7 +19,9 @@ public enum AddOnData {
     MiSSILE_CATCHER(13, "MISSILE_CATCHER"); // Catches missile at the expense of energy
 
     private int WEAPON_END_IND = 3;
-
+    private int id;
+    private String name;
+    private String category;
 
     AddOnData(int id, String name){
         String category;
@@ -75,7 +77,7 @@ public enum AddOnData {
         switch(this.name){
             case "GUN":
                 // Fire Gun
-                print("Hello World!");
+                System.out.println("Hello World!");
                 break;
             case "LASER_GUN":
                 // Fire Laser Gun if required energy is met
