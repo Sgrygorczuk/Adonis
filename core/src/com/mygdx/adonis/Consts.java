@@ -9,8 +9,8 @@ public final class Consts {
 
     // TODO change to 32?
     // all entities are some multiple of these in size
-    public static final float TILE_WIDTH = 16;
-    public static final float TILE_HEIGHT = 16;
+    public static final float TILE_WIDTH = 32;
+    public static final float TILE_HEIGHT = 32;
 
-    public static final float ENEMY_SPAWN_TIME = 15;
+    public static final float ENEMY_SPAWN_TIME = 5;
 }

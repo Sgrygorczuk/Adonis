@@ -35,6 +35,7 @@ import com.mygdx.adonis.Ship;
 
 import static com.mygdx.adonis.Consts.ENEMY_SPAWN_TIME;
 import static com.mygdx.adonis.Consts.TILE_HEIGHT;
+import static com.mygdx.adonis.Consts.TILE_WIDTH;
 import static com.mygdx.adonis.Consts.WORLD_HEIGHT;
 import static com.mygdx.adonis.Consts.WORLD_WIDTH;
 
@@ -77,14 +78,28 @@ class MainScreen extends ScreenAdapter {
 
     //Textures
     private Texture popUpTexture;                       //Pop up menu to show menu buttons and Help screen
+    private Texture backgroundUITexture;
+    private Texture backgroundGameTexture;
+    private Texture skillBarTexture;
+    private Texture highlightTexture;
+    private Texture infoBoardTexture;
+
+    private TextureRegion[][] playerFlyTexture;
+    private TextureRegion[][] playerDieTexture;
+    private TextureRegion[][] enemyOneFlyTexture;
+    private TextureRegion[][] enemyOneDieTexture;
+    private TextureRegion[][] enemyTwoFlyTexture;
+    private TextureRegion[][] enemyTwoDieTexture;
 
     private final short NUM_BUTTONS = 5;
 
     //Names of buttons
     private String[] menuButtonText = new String[]{"Main Menu", "Restart", "Help", "Sound Off", "Sound On"};
+    private String[] instructionText = new String[]{addNewLine("Move - WASD"), addNewLine("Shoot - Left Mouse Button"), addNewLine("Select Item - Mouse Scroll"), addNewLine("Remove Item - Space")};
     private int lives = 3;              //How many lives player has left
 
     //Flags
+    private int itemSelected = 8;
     private boolean developerMode = false;      //Developer mode shows hit boxes and phone data
     private boolean isPaused = false;         //Stops the game from updating
     private boolean isGameEnded = false;            //Tells us game has been lost
@@ -147,6 +162,26 @@ class MainScreen extends ScreenAdapter {
     */
     private void showTextures() {
         popUpTexture = new Texture(Gdx.files.internal("UI/PopUpBoarder.png"));
+        backgroundUITexture = new Texture(Gdx.files.internal("UI/GameBackground.png"));
+        backgroundGameTexture = new Texture(Gdx.files.internal("UI/MainMenuBackground.png"));
+        skillBarTexture = new Texture(Gdx.files.internal("UI/SkillBar.png"));
+        highlightTexture = new Texture(Gdx.files.internal("UI/Highlight.png"));
+        infoBoardTexture = new Texture(Gdx.files.internal("UI/InformationPanel.png"));
+
+        Texture playerFlyTexturePath = new Texture(Gdx.files.internal("Sprites/PlayerSpriteSheetFly.png"));
+        playerFlyTexture = new TextureRegion(playerFlyTexturePath).split(playerFlyTexturePath.getWidth()/4, playerFlyTexturePath.getHeight());
+        Texture playerDieTexturePath = new Texture(Gdx.files.internal("Sprites/PlayerSpriteSheetDie.png"));
+        playerDieTexture =  new TextureRegion(playerDieTexturePath).split(playerDieTexturePath.getWidth()/9, playerDieTexturePath.getHeight());
+
+        Texture enemyOneFlyPath = new Texture(Gdx.files.internal("Sprites/EnemyOneSpriteSheetFly.png"));
+        enemyOneFlyTexture = new TextureRegion(enemyOneFlyPath).split(enemyOneFlyPath.getWidth()/4, enemyOneFlyPath.getHeight());
+        Texture enemyOneDiePath = new Texture(Gdx.files.internal("Sprites/EnemyOneSpriteSheetDie.png"));
+        enemyOneDieTexture =  new TextureRegion(enemyOneDiePath).split(enemyOneDiePath.getWidth()/9, enemyOneDiePath.getHeight());
+
+        Texture enemyTwoFlyPath = new Texture(Gdx.files.internal("Sprites/EnemyOneSpriteSheetFly.png"));
+        enemyTwoFlyTexture = new TextureRegion(enemyTwoFlyPath).split(enemyTwoFlyPath.getWidth()/4, enemyTwoFlyPath.getHeight());
+        Texture enemyTwoDiePath = new Texture(Gdx.files.internal("Sprites/EnemyOneSpriteSheetDie.png"));
+        enemyTwoDieTexture =  new TextureRegion(enemyTwoDiePath).split(enemyTwoDiePath.getWidth()/9, enemyTwoDiePath.getHeight());
     }
 
     /*
@@ -167,22 +202,18 @@ class MainScreen extends ScreenAdapter {
 
     private void setUpPlayer() {
         // TODO sprite sheet for player; right now we just have a static image
-        Texture playerTexture = new Texture(Gdx.files.internal("Sprites" + tmpPrefix + "/Player.png"));
-        this.player = new Player(playerTexture);
+        this.player = new Player(playerFlyTexture, playerDieTexture);
     }
 
     private void spawnEnemy(EnemyType enemyType) {
-        Texture enemyTexture;
-
         // spawn a little above the screen at random x
-        Vector2 spawnPos = new Vector2(MathUtils.random(WORLD_WIDTH), WORLD_HEIGHT + TILE_HEIGHT);
+        Vector2 spawnPos = new Vector2(MathUtils.random(100 + TILE_WIDTH, 380 - TILE_WIDTH), WORLD_HEIGHT + TILE_HEIGHT);
         Ship enemy;
 
         switch (enemyType) {
             case DUMMY:
             default:
-                enemyTexture = new Texture(Gdx.files.internal("Sprites" + tmpPrefix + "/Turret.png"));
-                enemy = new DummyEnemy(enemyTexture, spawnPos.x, spawnPos.y);
+                enemy = new DummyEnemy(enemyOneFlyTexture, enemyOneDieTexture, spawnPos.x, spawnPos.y);
         }
 
         this.enemies.add(enemy);
@@ -194,12 +225,14 @@ class MainScreen extends ScreenAdapter {
     */
     private void setUpOpenMenuButton() {
         //Set up the texture
-        Texture menuButtonTexturePath = new Texture(Gdx.files.internal("UI/MenuButton.png"));
-        TextureRegion[][] buttonSpriteSheet = new TextureRegion(menuButtonTexturePath).split(45, 44); //Breaks down the texture into tiles
+        Texture menuButtonTexturePath = new Texture(Gdx.files.internal("UI/Button.png"));
+        TextureRegion[][] buttonSpriteSheet = new TextureRegion(menuButtonTexturePath).split(620, 141); //Breaks down the texture into tiles
 
         //Place the button
         menuButtons[0] = new ImageButton(new TextureRegionDrawable(buttonSpriteSheet[0][0]), new TextureRegionDrawable(buttonSpriteSheet[0][1]));
-        menuButtons[0].setPosition(430 - buttonSpriteSheet[0][0].getRegionWidth() / 2f, WORLD_HEIGHT - 10 - buttonSpriteSheet[0][0].getRegionHeight());
+        menuButtons[0].setPosition(430 - 93/2f, WORLD_HEIGHT - 20 - 21.15f);
+        menuButtons[0].setWidth(93);
+        menuButtons[0].setHeight(21.15f);
         menuStage.addActor(menuButtons[0]);
 
         //If button has not been clicked turn on menu and pause game,
@@ -402,7 +435,7 @@ class MainScreen extends ScreenAdapter {
         shapeRendererCollectible.setColor(Color.BLUE);
     }
 
-    /*
+    /**
     Input: Void
     Output: Void
     Purpose: Draws all of the variables on the screen
@@ -423,7 +456,7 @@ class MainScreen extends ScreenAdapter {
         }
     }
 
-    /*
+    /**
     Input: Void
     Output: Void
     Purpose: Draws the enemy/obstacle wireframe
@@ -432,10 +465,11 @@ class MainScreen extends ScreenAdapter {
         shapeRendererEnemy.setProjectionMatrix(camera.projection); //Screen set up camera
         shapeRendererEnemy.setTransformMatrix(camera.view);        //Screen set up camera
         shapeRendererEnemy.begin(ShapeRenderer.ShapeType.Line);    //Sets up to draw lines
+
         shapeRendererEnemy.end();
     }
 
-    /*
+    /**
     Input: Void
     Output: Void
     Purpose: Draws user wireframe
@@ -447,7 +481,7 @@ class MainScreen extends ScreenAdapter {
         shapeRendererUser.end();
     }
 
-    /*
+    /**
     Input: Void
     Output: Void
     Purpose: Draws the background object and UI wireframes
@@ -459,7 +493,7 @@ class MainScreen extends ScreenAdapter {
         shapeRendererBackground.end();
     }
 
-    /*
+    /**
     Input: Void
     Output: Void
     Purpose: Draws wireframe of the collectibles -- needs to be redone along with collectible objects
@@ -471,12 +505,13 @@ class MainScreen extends ScreenAdapter {
         shapeRendererCollectible.end();
     }
 
-    /*
+    /**
     Input: Void
     Output: Void
     Purpose: Updates all the moving components and game variables
     */
     private void update(float delta) {
+        menuStage.getViewport().update(viewport.getScreenWidth(), viewport.getScreenHeight(), true);
 
         spawnTimer -= delta;
 
@@ -531,6 +566,8 @@ class MainScreen extends ScreenAdapter {
         boolean right = Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT);
         boolean up = Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP);
         boolean down = Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.DOWN);
+        boolean mouseDown = Gdx.input.isKeyPressed(Input.Keys.NUM_2);
+        boolean mouseUp = Gdx.input.isKeyJustPressed(Input.Keys.NUM_3);
 
         if (left && up) {
             player.move(Direction.UP_LEFT);
@@ -551,8 +588,18 @@ class MainScreen extends ScreenAdapter {
         } else {
             player.stop();
         }
+
+        if(mouseDown){
+            itemSelected--;
+            if(itemSelected < 0){itemSelected = 8;}
+        }
+        else if(mouseUp){
+            itemSelected++;
+            if(itemSelected > 8){itemSelected = 0;}
+        }
     }
-    /*
+
+    /**
     Input: Void
     Output: Void
     Purpose: Puts the game in end game state
@@ -561,7 +608,7 @@ class MainScreen extends ScreenAdapter {
         isGameEnded = true;
     }
 
-    /*
+    /**
     Input: Void
     Output: Void
     Purpose: Restarts the game to base state
@@ -570,7 +617,7 @@ class MainScreen extends ScreenAdapter {
         // TODO
     }
 
-    /*
+    /**
     Input: Void
     Output: Void
     Purpose: Central drawing function
@@ -579,6 +626,11 @@ class MainScreen extends ScreenAdapter {
         batch.setProjectionMatrix(camera.projection);
         batch.setTransformMatrix(camera.view);
         batch.begin();
+        batch.draw(backgroundUITexture, 0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+        batch.draw(backgroundGameTexture, 100, 0, 280, WORLD_HEIGHT);
+        drawSkillBar();
+        drawInstructions();
+
         //If dev mode is on draw hit boxes and phone stats
         if (developerMode) {
             drawDeveloperInfo();
@@ -588,9 +640,7 @@ class MainScreen extends ScreenAdapter {
         batch.begin();
 
         player.draw(batch);
-        for (Ship enemy : enemies) {
-            enemy.draw(batch);
-        }
+        for (Ship enemy : enemies) { enemy.draw(batch); }
 
         batch.end();
 
@@ -618,6 +668,7 @@ class MainScreen extends ScreenAdapter {
         }
 
         batch.begin();
+        drawMenuText();
         //Draw the menu button text
         if (isPaused && !helpFlag) {
             drawButtonText();
@@ -625,7 +676,28 @@ class MainScreen extends ScreenAdapter {
         batch.end();
     }
 
-    /*
+    private void drawSkillBar(){
+        batch.draw(skillBarTexture, 50 - 47/2f, 0, 47, 250);
+        batch.draw(highlightTexture, 50 - 25/2f, 35 + 19 * itemSelected, 25, 25);
+    }
+
+    private void drawMenuText(){
+        bitmapFont.getData().setScale(.4f);
+        centerText(bitmapFont, "Menu", WORLD_WIDTH - 97/2f, WORLD_HEIGHT - 20 - 21.15f/4f);
+    }
+
+    private void drawInstructions(){
+        batch.draw(infoBoardTexture, 390, 30, 80, 200);
+        bitmapFont.getData().setScale(.3f);
+        centerText(bitmapFont, "Instruction", 430, 190);
+        bitmapFont.getData().setScale(.25f);
+        centerText(bitmapFont, instructionText[0], 430, 170);
+        centerText(bitmapFont, instructionText[1], 430, 150);
+        centerText(bitmapFont, instructionText[2],  430, 120);
+        centerText(bitmapFont, instructionText[3],  430, 90);
+    }
+
+    /**
     Input: Void
     Output: Void
     Purpose: Draws the hit boxes and the phone stats
@@ -647,7 +719,7 @@ class MainScreen extends ScreenAdapter {
         }
     }
 
-    /*
+    /**
     Input: Void
     Output: Void
     Purpose: Draws text over the menu buttons
@@ -674,7 +746,7 @@ class MainScreen extends ScreenAdapter {
         }
     }
 
-    /*
+    /**
     Input: Void
     Output: Void
     Purpose: Draws the help screen
@@ -683,7 +755,7 @@ class MainScreen extends ScreenAdapter {
     }
 
 
-    /*
+    /**
     Input: BitmapFont for size and font of text, string the text, and x and y for position
     Output: Void
     Purpose: General purpose function that centers the text on the position
@@ -694,7 +766,28 @@ class MainScreen extends ScreenAdapter {
         bitmapFont.draw(batch, string, x - glyphLayout.width / 2, y + glyphLayout.height / 2);
     }
 
-    /*
+    /**
+    Input: The given string, length - how many chars do we go till we start a new line
+    Output: Void
+    Purpose: This function take a string and adds a new line whenever it reaches the length between it's starting position andlengtht,
+    if start + length happens to occur on a non space char it goes back to the nearest space char
+    */
+    private String addNewLine(String str){
+        int spaceFound;
+        int reminder = 0; //Used to push back the check to wherever the last " " was
+        for (int j = 0; 14 * (j + 1) + j - reminder < str.length(); j++) {
+            //Finds the new position of where a " " occurs
+            spaceFound = str.lastIndexOf(" ", 14 * (j + 1) + j - reminder);
+            //Adds in a new line if this is not the end of the string
+            if(str.length() >= spaceFound + 1){
+                str = str.substring(0, spaceFound + 1) + "\n" + str.substring(spaceFound);
+                reminder = 14 * (j + 1) + j - spaceFound;
+            }
+        }
+        return str;
+    }
+
+    /**
     Input: Void
     Output: Void
     Purpose: Updates all the variables on the screen
@@ -708,7 +801,7 @@ class MainScreen extends ScreenAdapter {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
     }
 
-    /*
+    /**
     Input: Void
     Output: Void
     Purpose: Destroys everything once we move onto the new screen

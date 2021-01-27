@@ -21,6 +21,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.mygdx.adonis.Adonis;
+import com.mygdx.adonis.screen.planet.Planet;
 
 import static com.mygdx.adonis.Consts.WORLD_HEIGHT;
 import static com.mygdx.adonis.Consts.WORLD_WIDTH;
@@ -37,6 +38,10 @@ public class MenuScreen extends ScreenAdapter{
 
     //Textures
     private Texture popUpTexture;                       //Pop-up screen that the Credits and Help are displayed on
+    private Texture backgroundTexture;                  //Main background
+    private Texture planetTexture;
+    private Texture moonTexture;
+    private Texture menuSliderTexture;
 
     //String used on the buttons
     private String[] buttonText = new String[]{"Play", "Help", "Credits"};
@@ -48,6 +53,7 @@ public class MenuScreen extends ScreenAdapter{
 
     //Game object that keeps track of settings
     private Adonis adonis;
+    private Planet planet;
 
     private boolean helpFlag;      //Tells if help menu is up or not
     private boolean creditsFlag;   //Tells if credits menu is up or not
@@ -103,6 +109,10 @@ public class MenuScreen extends ScreenAdapter{
     private void showTextures(){
         //Basic single image textures
         popUpTexture = new Texture(Gdx.files.internal("UI/PopUpBoarder.png"));
+        backgroundTexture = new Texture(Gdx.files.internal("UI/MainMenuBackground.png"));
+        planetTexture = new Texture(Gdx.files.internal("UI/Planet.png"));
+        moonTexture = new Texture(Gdx.files.internal("UI/Moon.png"));
+        menuSliderTexture = new Texture(Gdx.files.internal("UI/MenuSlide.png"));
     }
 
     /*
@@ -128,14 +138,15 @@ public class MenuScreen extends ScreenAdapter{
     */
     private void setUpMainButtons(){
         //Get the texures of the buttons
-        Texture menuButtonTexturePath = new Texture(Gdx.files.internal("UI/BigButtonBlank.png"));
-        TextureRegion[][] buttonSpriteSheet = new TextureRegion(menuButtonTexturePath).split(118, 47); //Breaks down the texture into tiles
+        Texture menuButtonTexturePath = new Texture(Gdx.files.internal("UI/Button.png"));
+        TextureRegion[][] buttonSpriteSheet = new TextureRegion(menuButtonTexturePath).split(620, 141); //Breaks down the texture into tiles
 
         //Places the three main Play|Help|Credits buttons on the screen
         for(int i = 0; i < 3; i ++){
             menuButtons[i] =  new ImageButton(new TextureRegionDrawable(buttonSpriteSheet[0][0]), new TextureRegionDrawable(buttonSpriteSheet[0][1]));
-            menuButtons[i].setPosition(WORLD_WIDTH/2 - buttonSpriteSheet[0][0].getRegionWidth()/2f,
-                    WORLD_HEIGHT/3 - ( buttonSpriteSheet[0][0].getRegionWidth()/2f - 10) * i);
+            menuButtons[i].setPosition(20, 2*WORLD_HEIGHT/3 - (21.15f + 10) * i);
+            menuButtons[i].setWidth(93);
+            menuButtons[i].setHeight(21.15f);
             menuStage.addActor(menuButtons[i]);
 
             final int finalI = i;
@@ -197,7 +208,7 @@ public class MenuScreen extends ScreenAdapter{
         });
     }
 
-    /*
+    /**
     Input: Void
     Output: Void
     Purpose: Sets up the music that will play when screen is started
@@ -209,14 +220,14 @@ public class MenuScreen extends ScreenAdapter{
         music.play();
     }
 
-    /*
+    /**
     Input: Void
     Output: Void
     Purpose: SFX will be played any time a button is clicked
     */
     private void playButtonFX() { adonis.getAssetManager().get("SFX/Pop.wav", Sound.class).play(1/2f); }
 
-    /*
+    /**
     Input: Void
     Output: Void
     Purpose: Sets up the font
@@ -224,6 +235,10 @@ public class MenuScreen extends ScreenAdapter{
     private void showObjects(){
         if(adonis.getAssetManager().isLoaded("Fonts/Font.fnt")){bitmapFont = adonis.getAssetManager().get("Fonts/Font.fnt");}
         bitmapFont.getData().setScale(0.6f);
+        bitmapFont.setColor(Color.BLACK);
+
+        planet = new Planet(350, 100, 70, planetTexture);
+        planet.createMoon(20, 80, false, moonTexture);
     }
 
 
@@ -244,22 +259,8 @@ public class MenuScreen extends ScreenAdapter{
     Purpose: Updates the leaves and gobo's color
     */
     private void update() {
-        updateTouch();
-    }
-
-    /*
-    Input: Void
-    Output: Void
-    Purpose: Lets user click on gobo to change his color
-    */
-    private void updateTouch(){
-        float touchedY = WORLD_HEIGHT - Gdx.input.getY() * WORLD_HEIGHT / Gdx.graphics.getHeight();
-        float touchedX = Gdx.input.getX() * WORLD_WIDTH / Gdx.graphics.getWidth();
-        if(letGo && Gdx.input.isTouched() && touchedY >= 0 && touchedY <= 150
-                && touchedX >= 300 && touchedX <= WORLD_WIDTH) {
-            letGo = false;
-        }
-        else if(!letGo && !Gdx.input.isTouched()){letGo = true;} //Make sure you only click once
+        menuStage.getViewport().update(viewport.getScreenWidth(), viewport.getScreenHeight(), true);
+        planet.update();
     }
 
     /*
@@ -274,6 +275,9 @@ public class MenuScreen extends ScreenAdapter{
         batch.setTransformMatrix(camera.view);
         //Batch setting up texture before drawing buttons
         batch.begin();
+        batch.draw(backgroundTexture, 0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+        batch.draw(menuSliderTexture, 0, 0, 135, WORLD_HEIGHT);
+        planet.draw(batch);
         //Draw the pop up menu
         if(helpFlag  || creditsFlag){batch.draw(popUpTexture, 10, 10, WORLD_WIDTH - 20, WORLD_HEIGHT-20);}
         batch.end();
@@ -306,10 +310,10 @@ public class MenuScreen extends ScreenAdapter{
     Purpose: Draws the text on the Play|Help|Credits buttons
     */
     private void drawButtonText(){
-        bitmapFont.getData().setScale(0.5f);
+        bitmapFont.getData().setScale(0.4f);
         for(int i = 0; i < 3; i ++) {
-            centerText(bitmapFont, buttonText[i], WORLD_WIDTH / 2,
-                    WORLD_HEIGHT / 3 + 118/5f + 3 - (118/ 2f - 10) * i);
+            centerText(bitmapFont, buttonText[i], 20 + 46.5f,
+                    2 * WORLD_HEIGHT/3 + 15 - (31) * i);
         }
     }
 

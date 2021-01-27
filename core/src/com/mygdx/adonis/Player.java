@@ -2,6 +2,7 @@ package com.mygdx.adonis;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 import static com.mygdx.adonis.Consts.WORLD_HEIGHT;
 import static com.mygdx.adonis.Consts.WORLD_WIDTH;
@@ -10,13 +11,13 @@ public class Player extends Ship {
 
     public AddOn selectedAddOn;
 
-    public Player(Texture texture) {
+    public Player(TextureRegion[][] textureFly, TextureRegion[][] textureDie) {
         // spawn player near the bottom of the screen by default
-        this(texture, WORLD_WIDTH / 2, WORLD_HEIGHT / 10);
+        this(textureFly, textureDie, WORLD_WIDTH / 2, WORLD_HEIGHT / 10);
     }
 
-    public Player(Texture texture, float initX, float initY) {
-        super(texture, initX, initY);
+    public Player(TextureRegion[][] textureFly, TextureRegion[][] textureDie, float initX, float initY) {
+        super(textureFly, textureDie, initX, initY);
     }
 
     @Override
