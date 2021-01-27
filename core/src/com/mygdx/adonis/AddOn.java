@@ -1,10 +1,18 @@
 package com.mygdx.adonis;
 
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 
 public abstract class AddOn {
-    public Rectangle hitbox;
+    private Rectangle hitbox;
+    private TextureRegion texture;
+    private Animation animation;
+
+    AddOn(TextureRegion texture){
+        this.texture = texture;
+    }
 
     // TODO position relative to ship?
     // e.g. add-on on left vs right side of ship?

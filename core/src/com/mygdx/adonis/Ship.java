@@ -82,22 +82,9 @@ public abstract class Ship {
     }
 
     public void draw(SpriteBatch spriteBatch) {
-        for (AddOn addOn : this.addOns) {
-            addOn.draw(spriteBatch);
-        }
+        for (AddOn addOn : this.addOns) { addOn.draw(spriteBatch); }
 
         TextureRegion currentFrame = (TextureRegion) flyAnimation.getKeyFrame(animationTime);
-        /*
-        if (direction == 2) {
-            currentFrame = (TextureRegion) backAnimation.getKeyFrame(animationTime);
-        }
-        else if (direction == 0) {
-            currentFrame = (TextureRegion) rightAnimation.getKeyFrame(animationTime);
-        }
-        else if (direction == 1) {
-            currentFrame = (TextureRegion) leftAnimation.getKeyFrame(animationTime);
-        }
-        */
         spriteBatch.draw(currentFrame, hitbox.x, hitbox.y, TILE_WIDTH, TILE_HEIGHT);
     }
 

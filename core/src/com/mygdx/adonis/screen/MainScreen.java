@@ -26,6 +26,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.mygdx.adonis.Adonis;
+import com.mygdx.adonis.Alignment;
 import com.mygdx.adonis.Bullet;
 import com.mygdx.adonis.Direction;
 import com.mygdx.adonis.DummyEnemy;
@@ -92,12 +93,14 @@ class MainScreen extends ScreenAdapter {
     private TextureRegion[][] enemyOneDieTexture;
     private TextureRegion[][] enemyTwoFlyTexture;
     private TextureRegion[][] enemyTwoDieTexture;
+    private TextureRegion[][] playerLaserTexture;
+    private TextureRegion[][] enemyLaserTexture;
+
 
     private final short NUM_BUTTONS = 5;
 
     //Names of buttons
-    private String[] menuButtonText = new String[]{"Main Menu", "Restart", "Help", "Sound Off", "Sound On"};
-    private String[] instructionText = new String[]{addNewLine("Move - WASD"), addNewLine("Shoot - Left Mouse Button"), addNewLine("Select Item - Mouse Scroll"), addNewLine("Remove Item - Space")};
+    private String[] menuButtonText = new String[]{"Restart", "Help", "Sound Off", "Main Menu", "Sound On"};
     private int lives = 3;              //How many lives player has left
 
     //Flags
@@ -163,7 +166,7 @@ class MainScreen extends ScreenAdapter {
     Purpose: Sets up all of the textures
     */
     private void showTextures() {
-        popUpTexture = new Texture(Gdx.files.internal("UI/PopUpBoarder.png"));
+        popUpTexture = new Texture(Gdx.files.internal("UI/MenuPanel.png"));
         backgroundUITexture = new Texture(Gdx.files.internal("UI/GameBackground.png"));
         backgroundGameTexture = new Texture(Gdx.files.internal("UI/MainMenuBackground.png"));
         skillBarTexture = new Texture(Gdx.files.internal("UI/SkillBar.png"));
@@ -186,6 +189,11 @@ class MainScreen extends ScreenAdapter {
         enemyTwoFlyTexture = new TextureRegion(enemyTwoFlyPath).split(enemyTwoFlyPath.getWidth()/4, enemyTwoFlyPath.getHeight());
         Texture enemyTwoDiePath = new Texture(Gdx.files.internal("Sprites/EnemyOneSpriteSheetDie.png"));
         enemyTwoDieTexture =  new TextureRegion(enemyTwoDiePath).split(enemyTwoDiePath.getWidth()/9, enemyTwoDiePath.getHeight());
+
+        Texture playerLaserTexturePath = new Texture(Gdx.files.internal("Sprites/PlayerShot.png"));
+        playerLaserTexture = new TextureRegion(playerLaserTexturePath).split(playerLaserTexturePath.getWidth()/2, playerLaserTexturePath.getHeight());
+        Texture enemyLaserTexturePath = new Texture(Gdx.files.internal("Sprites/EnemyShot.png"));
+        enemyLaserTexture =  new TextureRegion(enemyLaserTexturePath).split(enemyLaserTexturePath.getWidth()/2, enemyLaserTexturePath.getHeight());
     }
 
     /*
@@ -249,13 +257,7 @@ class MainScreen extends ScreenAdapter {
                     playButtonSFX();
                     isPaused = !isPaused;
                     for (int i = 1; i < NUM_BUTTONS; i++) {
-                        if (isPaused) {
-                            //Turns on 1-5 buttons
-                            menuButtons[i].setVisible(true);
-                        } else {
-                            //Turns off 1-5 buttons
-                            menuButtons[i].setVisible(false);
-                        }
+                        menuButtons[i].setVisible(isPaused);
                     }
                 }
             }
@@ -269,27 +271,19 @@ class MainScreen extends ScreenAdapter {
     */
     private void setUpMenuButtons() {
         //Sets up the texture
-        Texture popUpButtonTexturePath = new Texture(Gdx.files.internal("UI/ButtonSpriteSheet.png"));
-        final TextureRegion[][] popUpButtonSpriteSheet = new TextureRegion(popUpButtonTexturePath).split(117, 47); //Breaks down the texture into tiles
+        Texture menuButtonTexturePath = new Texture(Gdx.files.internal("UI/Button.png"));
+        TextureRegion[][] buttonSpriteSheet = new TextureRegion(menuButtonTexturePath).split(620, 141); //Breaks down the texture into tiles
 
         //Sets up the position of the buttons in a square 2x2
-        float x;
-        float y;
         for (int i = 1; i < NUM_BUTTONS; i++) {
-            menuButtons[i] = new ImageButton(new TextureRegionDrawable(popUpButtonSpriteSheet[i - 1][0]), new TextureRegionDrawable(popUpButtonSpriteSheet[i - 1][1]));
-            if (i == 1 || i == 3) {
-                x = 380 / 2f - NUM_BUTTONS - popUpButtonSpriteSheet[0][0].getRegionWidth();
-            } else {
-                x = 380 / 2f + NUM_BUTTONS;
-            }
-            if (i < 3) {
-                y = WORLD_HEIGHT / 2f - 10 + popUpButtonSpriteSheet[0][0].getRegionHeight() / 2f;
-            } else {
-                y = WORLD_HEIGHT / 2f - 10 - popUpButtonSpriteSheet[0][0].getRegionHeight();
-            }
-            menuButtons[i].setPosition(x, y);
+            menuButtons[i] = new ImageButton(new TextureRegionDrawable(buttonSpriteSheet[0][0]), new TextureRegionDrawable(buttonSpriteSheet[0][1]));
+
+            menuButtons[i].setPosition(WORLD_WIDTH/2f - 150/2f, 215 - (10 + 40f) * (i-1));
             menuStage.addActor(menuButtons[i]);
             menuButtons[i].setVisible(false);       //Initially all the buttons are off
+
+            menuButtons[i].setWidth(150);
+            menuButtons[i].setHeight(40f);
 
             //Sets up each buttons function
             final int finalI = i;
@@ -298,17 +292,12 @@ class MainScreen extends ScreenAdapter {
                 public void tap(InputEvent event, float x, float y, int count, int button) {
                     super.tap(event, x, y, count, button);
                     playButtonSFX();
-                    //Returns to the main menu
-                    if (finalI == 1) {
-                        music.stop();
-                        adonis.setScreen(new MenuScreen(adonis));
-                    }
                     //Restarts the game
-                    else if (finalI == 2) {
+                    if (finalI == 1) {
                         restart();
                     }
                     //Turns on the help menu
-                    else if (finalI == 3) {
+                    else if (finalI == 2) {
                         helpFlag = true;
                         //Turns off all the buttons
                         for (ImageButton imageButton : menuButtons) {
@@ -317,9 +306,14 @@ class MainScreen extends ScreenAdapter {
                         //Turns exit button on
                         menuButtons[NUM_BUTTONS].setVisible(true);
                     }
-                    //Turns on/off the sound
+                    //Turns sound on and off
+                    else if (finalI == 3) {
+                        soundButtonAction();
+                    }
+                    //Back to Main Menu Screen
                     else {
-                        soundButtonAction(finalI, popUpButtonSpriteSheet);
+                        music.stop();
+                        adonis.setScreen(new MenuScreen(adonis));
                     }
                 }
             });
@@ -329,35 +323,18 @@ class MainScreen extends ScreenAdapter {
     /**
      * Changes the button image and turns the sound on and off
      *
-     * @param finalI                 Index of last button in menu
-     * @param popUpButtonSpriteSheet 2D TextureRegion array containing texture of last button
      */
-    private void soundButtonAction(final int finalI, final TextureRegion[][] popUpButtonSpriteSheet) {
-        //Gets rid of current button
-        menuButtons[finalI].setVisible(false);
+    private void soundButtonAction() {
         //Turns the volume down
         if (sfxVolume == 1f) {
-            //music.stop();
+            music.stop();
             sfxVolume = 0;
-            menuButtons[finalI] = new ImageButton(new TextureRegionDrawable(popUpButtonSpriteSheet[4][0]), new TextureRegionDrawable(popUpButtonSpriteSheet[4][1]));
         }
         //Turns the sound on
         else {
-            //music.play();
+            music.play();
             sfxVolume = 1;
-            menuButtons[finalI] = new ImageButton(new TextureRegionDrawable(popUpButtonSpriteSheet[3][0]), new TextureRegionDrawable(popUpButtonSpriteSheet[3][1]));
         }
-        //Creates new button in the place of the old one with a different image
-        menuButtons[finalI].setPosition(380 / 2f + NUM_BUTTONS, WORLD_HEIGHT / 2f - 10 - popUpButtonSpriteSheet[0][0].getRegionHeight());
-        menuStage.addActor(menuButtons[finalI]);
-        //Adds in this function if the button is clicked again
-        menuButtons[finalI].addListener(new ActorGestureListener() {
-            @Override
-            public void tap(InputEvent event, float x, float y, int count, int button) {
-                super.tap(event, x, y, count, button);
-                soundButtonAction(finalI, popUpButtonSpriteSheet);
-            }
-        });
     }
 
     /**
@@ -365,14 +342,14 @@ class MainScreen extends ScreenAdapter {
      */
     private void setUpExitButton() {
         //Sets up the texture
-        Texture exitButtonTexturePath = new Texture(Gdx.files.internal("UI/ExitButton.png"));
-        TextureRegion[][] exitButtonSpriteSheet = new TextureRegion(exitButtonTexturePath).split(45, 44); //Breaks down the texture into tiles
+        Texture menuButtonTexturePath = new Texture(Gdx.files.internal("UI/Button.png"));
+        TextureRegion[][] buttonSpriteSheet = new TextureRegion(menuButtonTexturePath).split(620, 141); //Breaks down the texture into tiles
 
         //Sets up the position
-        menuButtons[NUM_BUTTONS] = new ImageButton(new TextureRegionDrawable(exitButtonSpriteSheet[0][0]), new TextureRegionDrawable(exitButtonSpriteSheet[0][1]));
-        menuButtons[NUM_BUTTONS].setPosition(WORLD_WIDTH - 50, WORLD_HEIGHT - 50);
-        menuButtons[NUM_BUTTONS].setWidth(20);
-        menuButtons[NUM_BUTTONS].setHeight(20);
+        menuButtons[NUM_BUTTONS] = new ImageButton(new TextureRegionDrawable(buttonSpriteSheet[0][0]), new TextureRegionDrawable(buttonSpriteSheet[0][1]));
+        menuButtons[NUM_BUTTONS].setPosition(WORLD_WIDTH/2f - 150/2f, 80);
+        menuButtons[NUM_BUTTONS].setWidth(150);
+        menuButtons[NUM_BUTTONS].setHeight(40f);
         menuStage.addActor(menuButtons[NUM_BUTTONS]);
         menuButtons[NUM_BUTTONS].setVisible(false);
         //Sets up to turn of the help menu if clicked
@@ -415,21 +392,21 @@ class MainScreen extends ScreenAdapter {
      * Play sound effect for when button is pressed
      */
     private void playButtonSFX() {
-        adonis.getAssetManager().get("SFX/Pop.wav", Sound.class).play(1 / 2f);
+        adonis.getAssetManager().get("SFX/Pop.wav", Sound.class).play(0.1f * sfxVolume);
     }
 
     /**
      * Play sound effect for when button is pressed
      */
     private void playMMBUp() {
-        adonis.getAssetManager().get("SFX/MMB_Up.wav", Sound.class).play(1 / 2f);
+        adonis.getAssetManager().get("SFX/MMB_Up.wav", Sound.class).play(0.1f * sfxVolume);
     }
 
     /**
      * Play sound effect for when button is pressed
      */
     private void playMMBDown() {
-        adonis.getAssetManager().get("SFX/MMB_Down.wav", Sound.class).play(1 / 2f);
+        adonis.getAssetManager().get("SFX/MMB_Down.wav", Sound.class).play(0.1f * sfxVolume);
     }
 
     /**
@@ -648,8 +625,8 @@ class MainScreen extends ScreenAdapter {
         batch.begin();
         batch.draw(backgroundUITexture, 0, 0, WORLD_WIDTH, WORLD_HEIGHT);
         batch.draw(backgroundGameTexture, 100, 0, 280, WORLD_HEIGHT);
+        batch.draw(infoBoardTexture, 390, 30, 80, 200);
         drawSkillBar();
-        drawInstructions();
         drawStats();
 
         //If dev mode is on draw hit boxes and phone stats
@@ -662,6 +639,7 @@ class MainScreen extends ScreenAdapter {
 
         player.draw(batch);
         for (Ship enemy : enemies) { enemy.draw(batch); }
+        for (Bullet bullet : projectiles) { bullet.draw(batch); }
 
         batch.end();
 
@@ -674,11 +652,12 @@ class MainScreen extends ScreenAdapter {
         //Draw the menu pop up
         bitmapFont.getData().setScale(0.3f);
         if (isPaused || isGameEnded) {
-            batch.draw(popUpTexture, 380 / 2f - popUpTexture.getWidth() / 2f, WORLD_HEIGHT / 2 - popUpTexture.getHeight() / 2f);
+            batch.draw(popUpTexture, WORLD_WIDTH/2f - 200/2f, WORLD_HEIGHT/2 - 300/2f, 200, 300);
         }
         //Draw the help menu
         if (helpFlag) {
-            batch.draw(popUpTexture, 10, 10, WORLD_WIDTH - 20, WORLD_HEIGHT - 20);
+            batch.draw(popUpTexture, WORLD_WIDTH/2f - 200/2f, WORLD_HEIGHT/2 - 300/2f, 200, 300);
+            drawInstructions();
             drawHelpScreen();
         }
         batch.end();
@@ -689,11 +668,17 @@ class MainScreen extends ScreenAdapter {
         }
 
         batch.begin();
-        drawMenuText();
         //Draw the menu button text
         if (isPaused && !helpFlag) {
             drawButtonText();
         }
+        else if(helpFlag) {
+            bitmapFont.getData().setScale(.4f);
+            centerText(bitmapFont, "Back",  WORLD_WIDTH/2f, 103);
+        }
+
+        if(!helpFlag){ drawMenuText(); }
+
         batch.end();
     }
 
@@ -716,14 +701,14 @@ class MainScreen extends ScreenAdapter {
     }
 
     private void drawInstructions(){
-        batch.draw(infoBoardTexture, 390, 30, 80, 200);
-        bitmapFont.getData().setScale(.3f);
-        centerText(bitmapFont, "Instruction", 430, 190);
-        bitmapFont.getData().setScale(.25f);
-        centerText(bitmapFont, instructionText[0], 430, 170);
-        centerText(bitmapFont, instructionText[1], 430, 150);
-        centerText(bitmapFont, instructionText[2],  430, 120);
-        centerText(bitmapFont, instructionText[3],  430, 90);
+        bitmapFont.getData().setScale(.5f);
+        centerText(bitmapFont, "Instruction", WORLD_WIDTH/2f, 230);
+        bitmapFont.getData().setScale(.35f);
+
+        centerText(bitmapFont, "Move - WASD", WORLD_WIDTH/2f, 210);
+        centerText(bitmapFont, "Shoot - Left Mouse Button", WORLD_WIDTH/2f, 190);
+        centerText(bitmapFont, "Select Item - Mouse Scroll",  WORLD_WIDTH/2f, 170);
+        centerText(bitmapFont, "Remove Item - Space",  WORLD_WIDTH/2f, 150);
     }
 
     /**
@@ -754,24 +739,12 @@ class MainScreen extends ScreenAdapter {
     Purpose: Draws text over the menu buttons
     */
     private void drawButtonText() {
-        float x;
-        float y;
+        String string;
         for (int i = 1; i < NUM_BUTTONS; i++) {
-            if (i == 1 || i == 3) {
-                x = 380 / 2f - 1.4f * menuButtons[0].getWidth();
-            } else {
-                x = 380 / 2f + 1.4f * menuButtons[0].getWidth();
-            }
-            if (i < 3) {
-                y = WORLD_HEIGHT / 2f - 15 + menuButtons[0].getHeight();
-            } else {
-                y = WORLD_HEIGHT / 2f - menuButtons[0].getHeight();
-            }
+            string = menuButtonText[i - 1];
             //If the volume is off draw Sound On else Sound off
-            if (i == 4 && sfxVolume == 0) {
-                i = NUM_BUTTONS;
-            }
-            centerText(bitmapFont, menuButtonText[i - 1], x, y);
+            if (i == 3 && sfxVolume == 0) {string = menuButtonText[4];}
+            centerText(bitmapFont, string, WORLD_WIDTH/2f , 238 - (10 + 40f) * (i-1));
         }
     }
 
