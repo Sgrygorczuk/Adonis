@@ -85,7 +85,7 @@ public class MenuScreen extends ScreenAdapter{
         showCamera();           //Sets up camera through which objects are draw through
         showTextures();         //Sets up the textures
         showButtons();          //Sets up the buttons
-        //showMusic();            //Sets up the music
+        showMusic();            //Sets up the music
         showObjects();          //Sets up the font
     }
 
@@ -157,7 +157,7 @@ public class MenuScreen extends ScreenAdapter{
                     playButtonFX();
                     //Launches the game
                     if(finalI == 0){
-                        //music.stop();
+                        music.stop();
                         adonis.setScreen(new MainScreen(adonis));
                     }
                     //Turns on the help menu
@@ -214,8 +214,7 @@ public class MenuScreen extends ScreenAdapter{
     Purpose: Sets up the music that will play when screen is started
     */
     private void showMusic(){
-        music = adonis.getAssetManager().get("Music/GoboMainMenuTheme.wav", Music.class);
-        music.setVolume(0.1f);
+        music = adonis.getAssetManager().get("Music/MainMenuMusic.mp3", Music.class);
         music.setLooping(true);
         music.play();
     }

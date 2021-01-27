@@ -1,7 +1,8 @@
 com/mygdx/adonis/DummyEnemy.java
  com.mygdx.adonis.DummyEnemy
-com/mygdx/adonis/screen/LoadingScreen.java
- com.mygdx.adonis.screen.LoadingScreen
+com/mygdx/adonis/screen/planet/Planet.java
+ com.mygdx.adonis.screen.planet.Moon
+ com.mygdx.adonis.screen.planet.Planet
 com/mygdx/adonis/EnemyType.java
  com.mygdx.adonis.EnemyType
 com/mygdx/adonis/Player.java
@@ -12,17 +13,16 @@ com/mygdx/adonis/Alignment.java
  com.mygdx.adonis.Alignment
 com/mygdx/adonis/AddOn.java
  com.mygdx.adonis.AddOn
-com/mygdx/adonis/Adonis.java
- com.mygdx.adonis.Adonis
+com/mygdx/adonis/Consts.java
+ com.mygdx.adonis.Consts
 com/mygdx/adonis/Direction.java
  com.mygdx.adonis.Direction
 com/mygdx/adonis/Bullet.java
  com.mygdx.adonis.Bullet
-com/mygdx/adonis/Consts.java
- com.mygdx.adonis.Consts
-com/mygdx/adonis/screen/planet/Planet.java
- com.mygdx.adonis.screen.planet.Moon
- com.mygdx.adonis.screen.planet.Planet
+com/mygdx/adonis/Adonis.java
+ com.mygdx.adonis.Adonis
+com/mygdx/adonis/screen/LoadingScreen.java
+ com.mygdx.adonis.screen.LoadingScreen
 com/mygdx/adonis/screen/MainScreen.java
  com.mygdx.adonis.screen.MainScreen
  com.mygdx.adonis.screen.MainScreen$1

@@ -83,6 +83,8 @@ class MainScreen extends ScreenAdapter {
     private Texture skillBarTexture;
     private Texture highlightTexture;
     private Texture infoBoardTexture;
+    private Texture healthTexture;
+    private Texture energyTexture;
 
     private TextureRegion[][] playerFlyTexture;
     private TextureRegion[][] playerDieTexture;
@@ -137,7 +139,7 @@ class MainScreen extends ScreenAdapter {
         showObjects();      //Sets up player and font
         showButtons();      //Sets up the buttons
         setUpPlayer();
-        //showMusic();        //Sets up music
+        showMusic();        //Sets up music
         if (developerMode) {
             showRender();
         }    //If in developer mode sets up the redners
@@ -167,6 +169,8 @@ class MainScreen extends ScreenAdapter {
         skillBarTexture = new Texture(Gdx.files.internal("UI/SkillBar.png"));
         highlightTexture = new Texture(Gdx.files.internal("UI/Highlight.png"));
         infoBoardTexture = new Texture(Gdx.files.internal("UI/InformationPanel.png"));
+        healthTexture = new Texture(Gdx.files.internal("UI/PilotHealth.png"));
+        energyTexture = new Texture(Gdx.files.internal("UI/PilotEnergy.png"));
 
         Texture playerFlyTexturePath = new Texture(Gdx.files.internal("Sprites/PlayerSpriteSheetFly.png"));
         playerFlyTexture = new TextureRegion(playerFlyTexturePath).split(playerFlyTexturePath.getWidth()/4, playerFlyTexturePath.getHeight());
@@ -296,7 +300,7 @@ class MainScreen extends ScreenAdapter {
                     playButtonSFX();
                     //Returns to the main menu
                     if (finalI == 1) {
-                        //music.stop();
+                        music.stop();
                         adonis.setScreen(new MenuScreen(adonis));
                     }
                     //Restarts the game
@@ -401,9 +405,9 @@ class MainScreen extends ScreenAdapter {
      * Set up the music for the level
      */
     private void showMusic() {
-        music = adonis.getAssetManager().get("Music/GoboLevelTheme.wav", Music.class);
-        music.setVolume(0.1f);
+        music = adonis.getAssetManager().get("Music/GameMusic.mp3", Music.class);
         music.setLooping(true);
+        music.setVolume(.1f);
         music.play();
     }
 
@@ -412,6 +416,20 @@ class MainScreen extends ScreenAdapter {
      */
     private void playButtonSFX() {
         adonis.getAssetManager().get("SFX/Pop.wav", Sound.class).play(1 / 2f);
+    }
+
+    /**
+     * Play sound effect for when button is pressed
+     */
+    private void playMMBUp() {
+        adonis.getAssetManager().get("SFX/MMB_Up.wav", Sound.class).play(1 / 2f);
+    }
+
+    /**
+     * Play sound effect for when button is pressed
+     */
+    private void playMMBDown() {
+        adonis.getAssetManager().get("SFX/MMB_Down.wav", Sound.class).play(1 / 2f);
     }
 
     /**
@@ -566,7 +584,7 @@ class MainScreen extends ScreenAdapter {
         boolean right = Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT);
         boolean up = Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP);
         boolean down = Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.DOWN);
-        boolean mouseDown = Gdx.input.isKeyPressed(Input.Keys.NUM_2);
+        boolean mouseDown = Gdx.input.isKeyJustPressed(Input.Keys.NUM_2);
         boolean mouseUp = Gdx.input.isKeyJustPressed(Input.Keys.NUM_3);
 
         if (left && up) {
@@ -592,10 +610,12 @@ class MainScreen extends ScreenAdapter {
         if(mouseDown){
             itemSelected--;
             if(itemSelected < 0){itemSelected = 8;}
+            playMMBDown();
         }
         else if(mouseUp){
             itemSelected++;
             if(itemSelected > 8){itemSelected = 0;}
+            playMMBUp();
         }
     }
 
@@ -630,6 +650,7 @@ class MainScreen extends ScreenAdapter {
         batch.draw(backgroundGameTexture, 100, 0, 280, WORLD_HEIGHT);
         drawSkillBar();
         drawInstructions();
+        drawStats();
 
         //If dev mode is on draw hit boxes and phone stats
         if (developerMode) {
@@ -679,6 +700,14 @@ class MainScreen extends ScreenAdapter {
     private void drawSkillBar(){
         batch.draw(skillBarTexture, 50 - 47/2f, 0, 47, 250);
         batch.draw(highlightTexture, 50 - 25/2f, 35 + 19 * itemSelected, 25, 25);
+    }
+
+    private void drawStats(){
+        batch.draw(healthTexture, 10, WORLD_HEIGHT - 40, 80, 30);
+        bitmapFont.getData().setScale(.15f);
+        centerText(bitmapFont, "Health", 50, WORLD_HEIGHT - 17);
+        batch.draw(energyTexture, 10, WORLD_HEIGHT - 70, 80, 30);
+        centerText(bitmapFont, "Power", 50, WORLD_HEIGHT - 47);
     }
 
     private void drawMenuText(){

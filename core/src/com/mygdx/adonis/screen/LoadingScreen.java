@@ -3,6 +3,7 @@ package com.mygdx.adonis.screen;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.assets.loaders.BitmapFontLoader;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
@@ -92,12 +93,13 @@ public class LoadingScreen extends ScreenAdapter{
         adonis.getAssetManager().load("Fonts/Font.fnt", BitmapFont.class, bitmapFontParameter);
 
         //Loading the music
-        /*
-        dogFighter.getAssetManager().load("Music/GoboLevelTheme.wav", Music.class);
-        */
+        adonis.getAssetManager().load("Music/MainMenuMusic.mp3", Music.class);
+        adonis.getAssetManager().load("Music/GameMusic.mp3", Music.class);
 
         //Loading all of the SFX
         adonis.getAssetManager().load("SFX/Pop.wav", Sound.class);
+        adonis.getAssetManager().load("SFX/MMB_Down.wav", Sound.class);
+        adonis.getAssetManager().load("SFX/MMB_Up.wav", Sound.class);
 
     }
 
