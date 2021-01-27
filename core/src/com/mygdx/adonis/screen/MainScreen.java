@@ -84,8 +84,9 @@ class MainScreen extends ScreenAdapter {
     private Texture skillBarTexture;
     private Texture highlightTexture;
     private Texture infoBoardTexture;
-    private Texture healthTexture;
-    private Texture energyTexture;
+    private Texture energyOnTexture;
+    private Texture energyOffTexture;
+    private Texture dividerTexture;
 
     private TextureRegion[][] playerFlyTexture;
     private TextureRegion[][] playerDieTexture;
@@ -95,7 +96,7 @@ class MainScreen extends ScreenAdapter {
     private TextureRegion[][] enemyTwoDieTexture;
     private TextureRegion[][] playerLaserTexture;
     private TextureRegion[][] enemyLaserTexture;
-
+    private TextureRegion[][] addOnTexture;
 
     private final short NUM_BUTTONS = 5;
 
@@ -172,8 +173,9 @@ class MainScreen extends ScreenAdapter {
         skillBarTexture = new Texture(Gdx.files.internal("UI/SkillBar.png"));
         highlightTexture = new Texture(Gdx.files.internal("UI/Highlight.png"));
         infoBoardTexture = new Texture(Gdx.files.internal("UI/InformationPanel.png"));
-        healthTexture = new Texture(Gdx.files.internal("UI/PilotHealth.png"));
-        energyTexture = new Texture(Gdx.files.internal("UI/PilotEnergy.png"));
+        energyOnTexture = new Texture(Gdx.files.internal("UI/Energy.png"));
+        energyOffTexture = new Texture(Gdx.files.internal("UI/EnergyOff.png"));
+        dividerTexture = new Texture(Gdx.files.internal("UI/Divider.png"));
 
         Texture playerFlyTexturePath = new Texture(Gdx.files.internal("Sprites/PlayerSpriteSheetFly.png"));
         playerFlyTexture = new TextureRegion(playerFlyTexturePath).split(playerFlyTexturePath.getWidth()/4, playerFlyTexturePath.getHeight());
@@ -194,6 +196,10 @@ class MainScreen extends ScreenAdapter {
         playerLaserTexture = new TextureRegion(playerLaserTexturePath).split(playerLaserTexturePath.getWidth()/2, playerLaserTexturePath.getHeight());
         Texture enemyLaserTexturePath = new Texture(Gdx.files.internal("Sprites/EnemyShot.png"));
         enemyLaserTexture =  new TextureRegion(enemyLaserTexturePath).split(enemyLaserTexturePath.getWidth()/2, enemyLaserTexturePath.getHeight());
+
+        Texture addOnTexturePath = new Texture(Gdx.files.internal("Sprites/AddOns.png"));
+        addOnTexture =  new TextureRegion(addOnTexturePath).split(addOnTexturePath.getWidth(), addOnTexturePath.getHeight()/6);
+
     }
 
     /*
@@ -626,6 +632,7 @@ class MainScreen extends ScreenAdapter {
         batch.draw(backgroundUITexture, 0, 0, WORLD_WIDTH, WORLD_HEIGHT);
         batch.draw(backgroundGameTexture, 100, 0, 280, WORLD_HEIGHT);
         batch.draw(infoBoardTexture, 390, 30, 80, 200);
+        drawAddOnInfo();
         drawSkillBar();
         drawStats();
 
@@ -636,11 +643,12 @@ class MainScreen extends ScreenAdapter {
         batch.end();
 
         batch.begin();
-
         player.draw(batch);
         for (Ship enemy : enemies) { enemy.draw(batch); }
         for (Bullet bullet : projectiles) { bullet.draw(batch); }
 
+        batch.draw(dividerTexture, 98, 0, 4, WORLD_HEIGHT);
+        batch.draw(dividerTexture, 378, 0, 4, WORLD_HEIGHT);
         batch.end();
 
         //Draw open menu button
@@ -658,7 +666,6 @@ class MainScreen extends ScreenAdapter {
         if (helpFlag) {
             batch.draw(popUpTexture, WORLD_WIDTH/2f - 200/2f, WORLD_HEIGHT/2 - 300/2f, 200, 300);
             drawInstructions();
-            drawHelpScreen();
         }
         batch.end();
 
@@ -683,16 +690,17 @@ class MainScreen extends ScreenAdapter {
     }
 
     private void drawSkillBar(){
-        batch.draw(skillBarTexture, 50 - 47/2f, 0, 47, 250);
-        batch.draw(highlightTexture, 50 - 25/2f, 35 + 19 * itemSelected, 25, 25);
+        batch.draw(skillBarTexture, 50 - 47/2f, 0, 47, 200);
+        batch.draw(highlightTexture, 51 - 22/2f, 26 + 15.2f * itemSelected, 22, 22);
     }
 
     private void drawStats(){
-        batch.draw(healthTexture, 10, WORLD_HEIGHT - 40, 80, 30);
-        bitmapFont.getData().setScale(.15f);
-        centerText(bitmapFont, "Health", 50, WORLD_HEIGHT - 17);
-        batch.draw(energyTexture, 10, WORLD_HEIGHT - 70, 80, 30);
-        centerText(bitmapFont, "Power", 50, WORLD_HEIGHT - 47);
+
+        //TODO add AddOn check to see if UI should be on
+        if(true){ batch.draw(energyOffTexture, 10, WORLD_HEIGHT - 65, 80, 55); }
+        else{ batch.draw(energyOnTexture, 10, WORLD_HEIGHT - 65, 80, 55); }
+        if(true){ batch.draw(energyOffTexture, 10, WORLD_HEIGHT - 115, 80, 55); }
+        else{ batch.draw(energyOnTexture, 10, WORLD_HEIGHT - 115, 80, 55); }
     }
 
     private void drawMenuText(){
@@ -709,6 +717,14 @@ class MainScreen extends ScreenAdapter {
         centerText(bitmapFont, "Shoot - Left Mouse Button", WORLD_WIDTH/2f, 190);
         centerText(bitmapFont, "Select Item - Mouse Scroll",  WORLD_WIDTH/2f, 170);
         centerText(bitmapFont, "Remove Item - Space",  WORLD_WIDTH/2f, 150);
+    }
+
+    private void drawAddOnInfo(){
+        bitmapFont.getData().setScale(.5f);
+        centerText(bitmapFont, "NAME",  WORLD_WIDTH - 50, 180);
+        batch.draw(addOnTexture[0][0], WORLD_WIDTH - 70, 130, 40 , 20);
+        bitmapFont.getData().setScale(.35f);
+        centerText(bitmapFont, addNewLine("Adds HP Visibility", 12),  WORLD_WIDTH - 50, 110);
     }
 
     /**
@@ -749,15 +765,6 @@ class MainScreen extends ScreenAdapter {
     }
 
     /**
-    Input: Void
-    Output: Void
-    Purpose: Draws the help screen
-    */
-    private void drawHelpScreen() {
-    }
-
-
-    /**
     Input: BitmapFont for size and font of text, string the text, and x and y for position
     Output: Void
     Purpose: General purpose function that centers the text on the position
@@ -774,16 +781,16 @@ class MainScreen extends ScreenAdapter {
     Purpose: This function take a string and adds a new line whenever it reaches the length between it's starting position andlengtht,
     if start + length happens to occur on a non space char it goes back to the nearest space char
     */
-    private String addNewLine(String str){
+    private String addNewLine(String str, int lineLength){
         int spaceFound;
         int reminder = 0; //Used to push back the check to wherever the last " " was
-        for (int j = 0; 14 * (j + 1) + j - reminder < str.length(); j++) {
+        for (int j = 0; lineLength * (j + 1) + j - reminder < str.length(); j++) {
             //Finds the new position of where a " " occurs
-            spaceFound = str.lastIndexOf(" ", 14 * (j + 1) + j - reminder);
+            spaceFound = str.lastIndexOf(" ", lineLength * (j + 1) + j - reminder);
             //Adds in a new line if this is not the end of the string
             if(str.length() >= spaceFound + 1){
                 str = str.substring(0, spaceFound + 1) + "\n" + str.substring(spaceFound);
-                reminder = 14 * (j + 1) + j - spaceFound;
+                reminder = lineLength * (j + 1) + j - spaceFound;
             }
         }
         return str;

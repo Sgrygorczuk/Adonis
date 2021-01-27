@@ -42,6 +42,7 @@ public class MenuScreen extends ScreenAdapter{
     private Texture planetTexture;
     private Texture moonTexture;
     private Texture menuSliderTexture;
+    private Texture creditsTexture;
 
     //String used on the buttons
     private String[] buttonText = new String[]{"Play", "Help", "Credits"};
@@ -108,11 +109,12 @@ public class MenuScreen extends ScreenAdapter{
     */
     private void showTextures(){
         //Basic single image textures
-        popUpTexture = new Texture(Gdx.files.internal("UI/PopUpBoarder.png"));
+        popUpTexture = new Texture(Gdx.files.internal("UI/MenuPanel.png"));
         backgroundTexture = new Texture(Gdx.files.internal("UI/MainMenuBackground.png"));
         planetTexture = new Texture(Gdx.files.internal("UI/Planet.png"));
         moonTexture = new Texture(Gdx.files.internal("UI/Moon.png"));
         menuSliderTexture = new Texture(Gdx.files.internal("UI/MenuSlide.png"));
+        creditsTexture = new Texture(Gdx.files.internal("UI/Credits.png"));
     }
 
     /*
@@ -154,7 +156,7 @@ public class MenuScreen extends ScreenAdapter{
                 @Override
                 public void tap(InputEvent event, float x, float y, int count, int button) {
                     super.tap(event, x, y, count, button);
-                    playButtonFX();
+                    playButtonSFX();
                     //Launches the game
                     if(finalI == 0){
                         music.stop();
@@ -165,12 +167,14 @@ public class MenuScreen extends ScreenAdapter{
                         for (ImageButton imageButton : menuButtons) { imageButton.setVisible(false); }
                         helpFlag = true;
                         menuButtons[3].setVisible(true);
+                        menuButtons[3].setPosition(WORLD_WIDTH/2f - 150/2f, 80);
                     }
                     //Turns on the credits menu
                     else{
                         for (ImageButton imageButton : menuButtons) { imageButton.setVisible(false); }
                         creditsFlag = true;
                         menuButtons[3].setVisible(true);
+                        menuButtons[3].setPosition(WORLD_WIDTH/2f - 150/2f, 40);
                     }
                 }
             });
@@ -183,26 +187,29 @@ public class MenuScreen extends ScreenAdapter{
     Purpose: Sets exit button that leaves the Help and Credits menus
     */
     private void setUpExitButton(){
-        //Gets the textures
-        Texture exitButtonTexturePath = new Texture(Gdx.files.internal("UI/ExitButton.png"));
-        TextureRegion[][] exitButtonSpriteSheet = new TextureRegion(exitButtonTexturePath).split(45, 44); //Breaks down the texture into tiles
+        //Sets up the texture
+        Texture menuButtonTexturePath = new Texture(Gdx.files.internal("UI/Button.png"));
+        TextureRegion[][] buttonSpriteSheet = new TextureRegion(menuButtonTexturePath).split(620, 141); //Breaks down the texture into tiles
 
-        //Places the button and adds it to the stage
-        menuButtons[3] =  new ImageButton(new TextureRegionDrawable(exitButtonSpriteSheet[0][0]), new TextureRegionDrawable(exitButtonSpriteSheet[0][1]));
-        menuButtons[3].setPosition(WORLD_WIDTH - 50, WORLD_HEIGHT - 50);
-        menuButtons[3].setWidth(20);
-        menuButtons[3].setHeight(20);
+        //Sets up the position
+        menuButtons[3] = new ImageButton(new TextureRegionDrawable(buttonSpriteSheet[0][0]), new TextureRegionDrawable(buttonSpriteSheet[0][1]));
+        menuButtons[3].setPosition(WORLD_WIDTH/2f - 150/2f, 80);
+        menuButtons[3].setWidth(150);
+        menuButtons[3].setHeight(40f);
         menuStage.addActor(menuButtons[3]);
         menuButtons[3].setVisible(false);
-        //If tapped turn of any menu and turn back the main three buttons
+        //Sets up to turn of the help menu if clicked
         menuButtons[3].addListener(new ActorGestureListener() {
             @Override
             public void tap(InputEvent event, float x, float y, int count, int button) {
                 super.tap(event, x, y, count, button);
-                playButtonFX();
+                playButtonSFX();
                 helpFlag = false;
                 creditsFlag = false;
-                for (ImageButton imageButton : menuButtons) { imageButton.setVisible(true); }
+                //Turn on all buttons but turn off this one
+                for (ImageButton imageButton : menuButtons) {
+                    imageButton.setVisible(true);
+                }
                 menuButtons[3].setVisible(false);
             }
         });
@@ -224,7 +231,7 @@ public class MenuScreen extends ScreenAdapter{
     Output: Void
     Purpose: SFX will be played any time a button is clicked
     */
-    private void playButtonFX() { adonis.getAssetManager().get("SFX/Pop.wav", Sound.class).play(1/2f); }
+    private void playButtonSFX() { adonis.getAssetManager().get("SFX/Pop.wav", Sound.class).play(1/2f); }
 
     /**
     Input: Void
@@ -278,7 +285,11 @@ public class MenuScreen extends ScreenAdapter{
         batch.draw(menuSliderTexture, 0, 0, 135, WORLD_HEIGHT);
         planet.draw(batch);
         //Draw the pop up menu
-        if(helpFlag  || creditsFlag){batch.draw(popUpTexture, 10, 10, WORLD_WIDTH - 20, WORLD_HEIGHT-20);}
+        if(helpFlag){
+            batch.draw(popUpTexture, WORLD_WIDTH/2f - 200/2f, WORLD_HEIGHT/2 - 300/2f, 200, 300);
+            drawInstructions();
+        }
+        if(creditsFlag){ batch.draw(creditsTexture, 10, 10, WORLD_WIDTH - 20, WORLD_HEIGHT - 20); }
         batch.end();
 
         menuStage.draw(); // Draws the buttons
@@ -286,10 +297,17 @@ public class MenuScreen extends ScreenAdapter{
         batch.begin();
         //Draws the Play|Help|Credits text on buttons
         if(!helpFlag && !creditsFlag){drawButtonText();}
-        //Draws the Help Text
-        else if(helpFlag){drawHelpScreen();}
-        //Draws the credits text
-        else{drawCredits();}
+        else {
+            bitmapFont.getData().setScale(.4f);
+            if(creditsFlag){
+                centerText(bitmapFont, "Back",  WORLD_WIDTH/2f,  63);
+                drawCredits();
+            }
+            else{
+                centerText(bitmapFont, "Back",  WORLD_WIDTH/2f, 103);
+            }
+        }
+
         batch.end();
     }
 
@@ -301,6 +319,17 @@ public class MenuScreen extends ScreenAdapter{
     private void clearScreen() {
         Gdx.gl.glClearColor(Color.BLACK.r, Color.BLACK.g, Color.BLACK.b, Color.BLACK.a);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+    }
+
+    private void drawInstructions(){
+        bitmapFont.getData().setScale(.5f);
+        centerText(bitmapFont, "Instruction", WORLD_WIDTH/2f, 230);
+        bitmapFont.getData().setScale(.35f);
+
+        centerText(bitmapFont, "Move - WASD", WORLD_WIDTH/2f, 210);
+        centerText(bitmapFont, "Shoot - Left Mouse Button", WORLD_WIDTH/2f, 190);
+        centerText(bitmapFont, "Select Item - Mouse Scroll",  WORLD_WIDTH/2f, 170);
+        centerText(bitmapFont, "Remove Item - Space",  WORLD_WIDTH/2f, 150);
     }
 
     /*
@@ -319,42 +348,34 @@ public class MenuScreen extends ScreenAdapter{
     /*
     Input: Void
     Output: Void
-    Purpose: Draws the help screen
-    */
-    private void drawHelpScreen(){
-
-    }
-
-    /*
-    Input: Void
-    Output: Void
     Purpose: Draws the credits screen
     */
     private void drawCredits(){
+        float start = 70;
         //Title
         bitmapFont.getData().setScale(0.5f);
-        centerText(bitmapFont, "Credits", WORLD_WIDTH/2f, WORLD_HEIGHT-45);
+        centerText(bitmapFont, "Credits", WORLD_WIDTH/2f, WORLD_HEIGHT-50);
         bitmapFont.getData().setScale(0.32f);
 
-        centerText(bitmapFont, "Programming & Art", WORLD_WIDTH/2f, WORLD_HEIGHT - 80);
-        centerText(bitmapFont, "########", WORLD_WIDTH/2f, WORLD_HEIGHT - 95);
+        centerText(bitmapFont, "Programming", WORLD_WIDTH/2f, WORLD_HEIGHT - start);
+        centerText(bitmapFont, "Sebastian Grygorczuk", WORLD_WIDTH/2f, WORLD_HEIGHT - (start + 10));
+        centerText(bitmapFont, "Nelson Batista", WORLD_WIDTH/4f + 10, WORLD_HEIGHT - (start + 10));
+        centerText(bitmapFont, "Paul Tan", 3*WORLD_WIDTH/4f - 10, WORLD_HEIGHT - (start + 10));
 
-        centerText(bitmapFont, "Music", WORLD_WIDTH/2f, WORLD_HEIGHT - 125);
-        centerText(bitmapFont, "########", WORLD_WIDTH/2f, WORLD_HEIGHT - 140);
 
-        centerText(bitmapFont, "SFX - ########", WORLD_WIDTH/2f, WORLD_HEIGHT - 170);
-        centerText(bitmapFont, "########", WORLD_WIDTH/2f - 120, WORLD_HEIGHT - 190);
-        centerText(bitmapFont, "########", WORLD_WIDTH/2f, WORLD_HEIGHT - 190);
-        centerText(bitmapFont, "########", WORLD_WIDTH/2f + 120, WORLD_HEIGHT - 190);
-        centerText(bitmapFont, "########", WORLD_WIDTH/2f - 120, WORLD_HEIGHT - 210);
-        centerText(bitmapFont, "########", WORLD_WIDTH/2f, WORLD_HEIGHT - 210);
-        centerText(bitmapFont, "########", WORLD_WIDTH/2f + 120, WORLD_HEIGHT - 210);
-        centerText(bitmapFont, "########", WORLD_WIDTH/2f - 120, WORLD_HEIGHT - 230);
-        centerText(bitmapFont, "########", WORLD_WIDTH/2f, WORLD_HEIGHT - 230);
-        centerText(bitmapFont, "########", WORLD_WIDTH/2f + 120, WORLD_HEIGHT - 230);
+        centerText(bitmapFont, "Art", WORLD_WIDTH/2f, WORLD_HEIGHT - (start + 25));
+        centerText(bitmapFont, "All art is from ", WORLD_WIDTH/2f, WORLD_HEIGHT - (start + 35));
 
-        centerText(bitmapFont, "Font - ########", WORLD_WIDTH/2f, WORLD_HEIGHT - 255);
-        centerText(bitmapFont, "########", WORLD_WIDTH/2f, WORLD_HEIGHT - 275);
+        centerText(bitmapFont, "SFX and Music", WORLD_WIDTH/2f, WORLD_HEIGHT - (start + 50));
+        centerText(bitmapFont, "########", WORLD_WIDTH/2f - 120, WORLD_HEIGHT - (start + 60));
+        centerText(bitmapFont, "########", WORLD_WIDTH/2f, WORLD_HEIGHT - (start + 60));
+        centerText(bitmapFont, "########", WORLD_WIDTH/2f + 120, WORLD_HEIGHT - (start + 60));
+        centerText(bitmapFont, "########", WORLD_WIDTH/2f - 120, WORLD_HEIGHT - (start + 70));
+        centerText(bitmapFont, "########", WORLD_WIDTH/2f, WORLD_HEIGHT - (start + 70));
+        centerText(bitmapFont, "########", WORLD_WIDTH/2f + 120, WORLD_HEIGHT - (start + 70));
+
+        centerText(bitmapFont, "Font - ########", WORLD_WIDTH/2f, WORLD_HEIGHT - (start + 85));
+        centerText(bitmapFont, "########", WORLD_WIDTH/2f, WORLD_HEIGHT - (start + 95));
     }
 
     /*
