@@ -13,4 +13,7 @@ public final class Consts {
     public static final float TILE_HEIGHT = 16;
 
     public static final float ENEMY_SPAWN_TIME = 15;
+
+
+    public static final float diagonalspeed = 0.707f;
 }

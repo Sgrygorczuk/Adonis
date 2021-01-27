@@ -15,9 +15,8 @@ public abstract class AddOn {
     private int id;
     private String name;
 
-    public AddOn(int id, String name){
-        this.id = id;
-        this.name = name;
+    public AddOn(int id){
+
     }
 
     public abstract void update(float delta);

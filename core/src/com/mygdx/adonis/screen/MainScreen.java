@@ -85,7 +85,7 @@ class MainScreen extends ScreenAdapter {
     private int lives = 3;              //How many lives player has left
 
     //Flags
-    private boolean developerMode = false;      //Developer mode shows hit boxes and phone data
+    private boolean developerMode = true;      //Developer mode shows hit boxes and phone data
     private boolean isPaused = false;         //Stops the game from updating
     private boolean isGameEnded = false;            //Tells us game has been lost
     private float sfxVolume = 1f;               //Current sfx volume
@@ -480,12 +480,14 @@ class MainScreen extends ScreenAdapter {
 
         spawnTimer -= delta;
 
+        if (developerMode){
+            devInstallAddon();
+        }
         handleInput();
         if (spawnTimer <= 0) {
             spawnEnemy(EnemyType.DUMMY);
             spawnTimer = ENEMY_SPAWN_TIME + MathUtils.random(-5f, 5f);
         }
-
         for (Bullet bullet : projectiles) {
             bullet.update(delta);
 
@@ -532,6 +534,10 @@ class MainScreen extends ScreenAdapter {
         boolean up = Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP);
         boolean down = Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.DOWN);
 
+        if(Gdx.input.isButtonPressed(Input.Buttons.LEFT)){
+            player.fire();
+        }
+
         if (left && up) {
             player.move(Direction.UP_LEFT);
         } else if (left && down) {
@@ -557,6 +563,18 @@ class MainScreen extends ScreenAdapter {
     Output: Void
     Purpose: Puts the game in end game state
     */
+
+    private void devInstallAddon(){
+
+        if(Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_0)){
+            player.onInstall(1);
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_1)) {
+            player.onInstall(55);
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_2)) {
+            player.onDestroy(55);
+        }
+    }
+
     private void endGame() {
         isGameEnded = true;
     }
@@ -635,9 +653,15 @@ class MainScreen extends ScreenAdapter {
         int x = (int) Gdx.input.getAccelerometerX();
         int y = (int) Gdx.input.getAccelerometerY();
         int z = (int) Gdx.input.getAccelerometerZ();
-        centerText(bitmapFontDeveloper, "X: " + x, 40, 300);
-        centerText(bitmapFontDeveloper, "Y: " + y, 40, 280);
-        centerText(bitmapFontDeveloper, "Z: " + z, 40, 260);
+//        centerText(bitmapFontDeveloper, "X: " + x, 40, 300);
+//        centerText(bitmapFontDeveloper, "Y: " + y, 40, 280);
+//        centerText(bitmapFontDeveloper, "Z: " + z, 40, 260);
+        centerText(bitmapFontDeveloper, "Player X:" + player.hitbox.getX(), 80, 300);
+        centerText(bitmapFontDeveloper, "Player Y:" + player.hitbox.getY(), 80, 280);
+        centerText(bitmapFontDeveloper, "Player Max Health:" + player.maxHealth, 80, 260);
+        centerText(bitmapFontDeveloper, "Player Health:" + player.health, 80, 240);
+        centerText(bitmapFontDeveloper, "Player Max Energy:" + player.maxEnergy, 80, 220);
+        centerText(bitmapFontDeveloper, "Player Energy:" + player.energy, 80, 200);
         if (Math.abs(x) > Math.abs(y) && Math.abs(x) > Math.abs(z)) {
             centerText(bitmapFontDeveloper, "Surface X", 40, 240);
         } else if (Math.abs(y) > Math.abs(x) && Math.abs(y) > Math.abs(z)) {

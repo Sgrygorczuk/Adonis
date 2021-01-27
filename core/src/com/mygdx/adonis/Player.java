@@ -16,11 +16,12 @@ public class Player extends Ship {
     }
 
     public Player(Texture texture, float initX, float initY) {
-        super(texture, initX, initY);
+        super(texture, initX, initY, Alignment.PLAYER);
     }
 
     @Override
     public void update(float delta) {
+        updateBullets(delta);
         super.update(delta);
         // TODO update player state based on addons?
     }
@@ -32,6 +33,6 @@ public class Player extends Ship {
 
     public void ejectSelected() {
         if (selectedAddOn == null) return;
-        super.addOns.removeValue(selectedAddOn, true);
+//        super.addOns.removeValue(selectedAddOn, true);
     }
 }
