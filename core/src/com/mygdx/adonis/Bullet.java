@@ -3,6 +3,7 @@ package com.mygdx.adonis;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
@@ -25,7 +26,7 @@ public class Bullet {
     public Bullet(Alignment alignment, Direction dir, float x, float y, TextureRegion[][] texture) {
         this.alignment = alignment;
         this.dir = dir;
-        this.hitbox = new Rectangle(x,y,TILE_WIDTH, TILE_HEIGHT);
+        this.hitbox = new Rectangle(x,y,TILE_WIDTH/2f, TILE_HEIGHT/2f);
         this.velocity = new  Vector2(0,0);
         this.texture = texture;
         this.damage = 25;
@@ -38,7 +39,7 @@ public class Bullet {
      Purpose: Sets up the animation loops in all of the directions
      */
     protected void setUpAnimation(){
-        animation= new Animation<>(0.033f, this.texture[0][0], this.texture[0][1]);
+        animation= new Animation<>(0.031f, this.texture[0][0], this.texture[0][1]);
         animation.setPlayMode(Animation.PlayMode.NORMAL);
     }
 
@@ -61,9 +62,18 @@ public class Bullet {
 
     }
 
+    /**
+     Input: Shaperenderd
+     Output: Void
+     Purpose: Draws the circle on the screen using render
+     */
+    public  void drawDebug(ShapeRenderer shapeRenderer) {
+        shapeRenderer.rect(hitbox.x, hitbox.y, hitbox.width, hitbox.height);
+    }
+
     public void draw(SpriteBatch spriteBatch){
         TextureRegion currentFrame = (TextureRegion) animation.getKeyFrame(animationTime);
-        spriteBatch.draw(currentFrame, hitbox.x, hitbox.y, TILE_WIDTH/2f, TILE_HEIGHT/2f);
+        spriteBatch.draw(currentFrame, hitbox.x, hitbox.y, hitbox.width, hitbox.height);
     }
 
 }

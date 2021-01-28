@@ -1,9 +1,7 @@
 package com.mygdx.adonis;
 
 import android.os.Bundle;
-import android.view.WindowManager;
-
-import androidx.room.Room;
+import android.view.WindowManager;;
 
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;

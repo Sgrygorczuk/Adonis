@@ -37,14 +37,16 @@ public class LoadingScreen extends ScreenAdapter{
     private boolean logoDoneFlag = false;
     private static final float LOGO_TIME = 2F;
     private float logoTimer = LOGO_TIME;
+    int screen;
 
 
-    /*
-    Input: SpaceHops
+    /**
+    Input: Adoins
     Output: Void
     Purpose: Grabs the info from main screen that holds asset manager
     */
-    public LoadingScreen(Adonis adonis) { this.adonis = adonis;}
+    public LoadingScreen(Adonis adonis) {
+        this.adonis = adonis;}
 
     /*
     Input: Dimensions
@@ -88,7 +90,6 @@ public class LoadingScreen extends ScreenAdapter{
         logoTexture = new Texture(Gdx.files.internal("Sprites/Logo.png"));
 
         //Load the font
-
         BitmapFontLoader.BitmapFontParameter bitmapFontParameter = new BitmapFontLoader.BitmapFontParameter();
         bitmapFontParameter.atlasName = "font_assets.atlas";
         adonis.getAssetManager().load("Fonts/Font.fnt", BitmapFont.class, bitmapFontParameter);
@@ -101,14 +102,18 @@ public class LoadingScreen extends ScreenAdapter{
         adonis.getAssetManager().load("SFX/Pop.wav", Sound.class);
         adonis.getAssetManager().load("SFX/MMB_Down.wav", Sound.class);
         adonis.getAssetManager().load("SFX/MMB_Up.wav", Sound.class);
+        adonis.getAssetManager().load("SFX/PlayerShoot.wav", Sound.class);
+        adonis.getAssetManager().load("SFX/Explosion.wav", Sound.class);
 
+
+        //Loading Tiled Map
         adonis.getAssetManager().load("Tiled/AdonisMap.tmx", TiledMap.class);            //Loads the map
     }
 
-    /*
+    /**
     Input: Delta, timing
     Output: Void
-    Purpose: What gets drawn
+    Purpose: Central update function
     */
     @Override
     public void render(float delta) {
@@ -116,18 +121,28 @@ public class LoadingScreen extends ScreenAdapter{
         draw();
     }
 
-    /*
+    /**
     Input: Void
     Output: Void
     Purpose: Updates the variable of the progress bar, when the whole thing is load it turn on game screen
     */
     private void update(float delta) {
         updateTimer(delta);
-        if (adonis.getAssetManager().update() && logoDoneFlag) { adonis.setScreen(new MenuScreen(adonis)); }
+        if (adonis.getAssetManager().update()) {
+            switch (screen) {
+                case 0:{
+                    if(logoDoneFlag) {adonis.setScreen(new MenuScreen(adonis));}
+                    break;
+                }
+                case 1:{
+                    adonis.setScreen(new MainScreen(adonis));
+                }
+            }
+        }
         else {adonis.getAssetManager().getProgress();}
     }
 
-    /*
+    /**
     Input: Delta, timing
     Output: Void
     Purpose: Counts down until the logo has been on screen long enough
@@ -140,7 +155,7 @@ public class LoadingScreen extends ScreenAdapter{
         }
     }
 
-    /*
+    /**
     Input: Void
     Output: Void
     Purpose: Draws the progress
@@ -157,7 +172,7 @@ public class LoadingScreen extends ScreenAdapter{
 
     }
 
-    /*
+    /**
     Input: Void
     Output: Void
     Purpose: Sets screen color
@@ -167,7 +182,7 @@ public class LoadingScreen extends ScreenAdapter{
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
     }
 
-    /*
+    /**
     Input: Void
     Output: Void
     Purpose: Gets rid of all visuals

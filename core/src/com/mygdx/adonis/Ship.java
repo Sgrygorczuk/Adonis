@@ -3,11 +3,11 @@ package com.mygdx.adonis;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
-import com.mygdx.adonis.Alignment;
 import static com.mygdx.adonis.Consts.TILE_HEIGHT;
 import static com.mygdx.adonis.Consts.TILE_WIDTH;
 
@@ -38,6 +38,7 @@ public abstract class Ship {
 
     //Current animation frame time
     protected float animationTime = 0;
+    private boolean dieFlag = false;
 
     public Ship(TextureRegion flySpriteSheet[][], TextureRegion[][] dieSpriteSheet, float initX, float initY, Alignment align) {
         // can multiply e.g. by 1.5, 1.2 to get more or less health
@@ -71,20 +72,21 @@ public abstract class Ship {
         dieAnimation = new Animation<>(0.1f, this.dieSpriteSheet[0][0], this.dieSpriteSheet[0][1],
                 this.dieSpriteSheet[0][2], this.dieSpriteSheet[0][3], this.dieSpriteSheet[0][4], this.dieSpriteSheet[0][5],
                 this.dieSpriteSheet[0][6], this.dieSpriteSheet[0][7], this.dieSpriteSheet[0][8]);
-        dieAnimation.setPlayMode(Animation.PlayMode.LOOP);
+        dieAnimation.setPlayMode(Animation.PlayMode.NORMAL);
     }
 
     // collision isn't as simple as checking a single hitbox since each ship has multiple addons
     public boolean isColliding(Rectangle other) {
         // todo addons
-        System.out.println("Bullet Height: "+other.height);
-        System.out.println("Bullet Width: "+other.height);
-
-        return this.hitbox.overlaps(other);
+        return this.hitbox.contains(other);
     }
 
     public void takeDamage(int amt) {
         this.health -= amt;
+        if(health < 0 && !dieFlag){
+            animationTime = 0;
+            dieFlag = true;
+        }
     }
 
     // TODO change velocity depending on game stuff
@@ -92,32 +94,23 @@ public abstract class Ship {
         for (AddOnData addOn : this.addOns) {
             // addOn.update(delta);
         }
-        if (this.health > this.maxHealth) {
-            this.health = this.maxHealth;
-        }
-        if (this.maxEnergy > 0 && this.energy < this.maxEnergy) {
-            this.energy++;
-        }
-        if (this.energy > this.maxEnergy) {
-            this.energy = this.maxEnergy;
-        }
 
         animationTime += delta;
-        velocity.x = this.dir.getX();
-        velocity.y = this.dir.getY();
 
-        hitbox.x= hitbox.x = hitbox.getX() + (velocity.x * delta * TILE_WIDTH * 5);
-        hitbox.y = hitbox.getY() + (velocity.y * delta * TILE_HEIGHT * 5);
-    }
+        if(health > 0) {
+            if (this.health > this.maxHealth) { this.health = this.maxHealth; }
+            if (this.maxEnergy > 0 && this.energy < this.maxEnergy) { this.energy++; }
+            if (this.energy > this.maxEnergy) { this.energy = this.maxEnergy; }
 
-    public void draw(SpriteBatch spriteBatch) {
-        for (AddOnData addOn : this.addOns) {
-            // addOn.draw(spriteBatch);
+            velocity.x = this.dir.getX();
+            velocity.y = this.dir.getY();
+
+            hitbox.x = hitbox.getX() + (velocity.x * delta * TILE_WIDTH * 5);
+            hitbox.y = hitbox.getY() + (velocity.y * delta * TILE_HEIGHT * 5);
         }
-
-        TextureRegion currentFrame = (TextureRegion) flyAnimation.getKeyFrame(animationTime);
-        spriteBatch.draw(currentFrame, hitbox.x, hitbox.y, hitbox.width, hitbox.height);
     }
+
+    public boolean getBlowUpFlag(){return dieAnimation.getKeyFrame(animationTime) == this.dieSpriteSheet[0][8];}
 
     public void move(Direction dir) {
         this.dir = dir;
@@ -129,17 +122,10 @@ public abstract class Ship {
             this.onUse(addOn);
         }
     }
-    public boolean hasAddon(AddOnData addOn){
-        for(AddOnData addOnHave : this.addOns){
-            if(addOn == addOnHave){
-                return true;
-            }
-        }
-        return false;
-    }
+
     public void onInstall(AddOnData addOn) {
         this.addOns.add(addOn);
-        System.out.println("Installed: "+addOn.name());
+        System.out.println(addOn.name());
         // TODO: install the addons - Paul
         switch (addOn) {
             case HEALTH_BAR_GUI:
@@ -180,7 +166,6 @@ public abstract class Ship {
                 // Doesn't have an installation property
                 break;
         }
-        updateShip();
     }
 
     public void onUse(AddOnData addOn) {
@@ -261,7 +246,6 @@ public abstract class Ship {
                 // Doesn't have an uninstall property
                 break;
         }
-        updateShip();
     }
 
     public void updateBullets(float delta) {
@@ -279,12 +263,31 @@ public abstract class Ship {
         }
     }
 
-    public void updateShip(){
-        this.hitbox.height = (1+(float)(0.5*this.addOns.size))*TILE_HEIGHT;
-        this.hitbox.width = (1+(float)(0.5*this.addOns.size))*TILE_WIDTH;
+    public void stop() { this.move(Direction.NONE); }
+
+    /**
+     Input: Shaperenderd
+     Output: Void
+     Purpose: Draws the circle on the screen using render
+     */
+    public  void drawDebug(ShapeRenderer shapeRenderer) {
+        shapeRenderer.rect(hitbox.x, hitbox.y, hitbox.width, hitbox.height);
     }
 
-    public void stop() {
-        this.move(Direction.NONE);
+    public void draw(SpriteBatch spriteBatch) {
+        for (AddOnData addOn : this.addOns) {
+            // addOn.draw(spriteBatch);
+        }
+
+        TextureRegion currentFrame;
+        float width = hitbox.width; //The die sprite is wider
+        float offset = 0;           //Need to offset the width change
+        if(health > 0){ currentFrame = (TextureRegion) flyAnimation.getKeyFrame(animationTime); }
+        else {
+            currentFrame = (TextureRegion) dieAnimation.getKeyFrame(animationTime);
+            width *= (float) dieSpriteSheet[0][0].getRegionWidth()/flySpriteSheet[0][0].getRegionWidth();
+            offset = (width - hitbox.width)/2f;
+        }
+        spriteBatch.draw(currentFrame, hitbox.x - offset, hitbox.y, width , hitbox.height);
     }
 }

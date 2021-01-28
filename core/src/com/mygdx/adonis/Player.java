@@ -18,7 +18,10 @@ public class Player extends Ship {
     public void update(float delta) {
         updateBullets(delta);
         super.update(delta);
-        // TODO update player state based on addons?
+        if(hitbox.x < 95){hitbox.x = 95;}
+        if(hitbox.x + hitbox.width> 380){hitbox.x = 380 - hitbox.width;}
+        if(hitbox.y < 0){hitbox.y = 0;}
+        if(hitbox.y + hitbox.height > WORLD_HEIGHT){hitbox.y = WORLD_HEIGHT - hitbox.height;}
     }
 
     @Override
