@@ -13,6 +13,7 @@ public class Bullet {
     public Rectangle hitbox;
     public Vector2 velocity;
     public int damage;
+    public Direction dir;
 
     public TextureRegion[][] texture;
     private Animation animation;
@@ -21,8 +22,11 @@ public class Bullet {
 
     public Alignment alignment;
 
-    public Bullet(Alignment alignment, TextureRegion[][] texture) {
+    public Bullet(Alignment alignment, Direction dir, float x, float y, TextureRegion[][] texture) {
         this.alignment = alignment;
+        this.dir = dir;
+        this.hitbox = new Rectangle(x,y,TILE_WIDTH, TILE_HEIGHT);
+        this.velocity = new  Vector2(0,0);
         this.texture = texture;
         setUpAnimation();
     }
@@ -38,9 +42,24 @@ public class Bullet {
     }
 
     public void update(float delta) {
-        float newX = hitbox.getX() + (velocity.x * delta);
-        float newY = hitbox.getY() + (velocity.y * delta);
-        hitbox.setPosition(newX, newY);
+        if(this.alignment == Alignment.PLAYER){
+            this.velocity.y = 1;
+        } else {
+            this.velocity.y = -1;
+        }
+        float newX = hitbox.getX() + (velocity.x * delta*TILE_WIDTH*10);
+        float newY = hitbox.getY() + (velocity.y * delta*TILE_HEIGHT*10);
+
+        hitbox.setCenter(newX, newY);
+    }
+
+    public void dispose(){
+//        this.texture.dispose();
+        this.alignment = null;
+        this.dir = null;
+        this.hitbox = null;
+        this.velocity = null;
+
     }
 
     public void draw(SpriteBatch spriteBatch){

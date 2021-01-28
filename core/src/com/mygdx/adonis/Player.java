@@ -1,6 +1,5 @@
 package com.mygdx.adonis;
 
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
@@ -17,11 +16,12 @@ public class Player extends Ship {
     }
 
     public Player(TextureRegion[][] textureFly, TextureRegion[][] textureDie, float initX, float initY) {
-        super(textureFly, textureDie, initX, initY);
+        super(textureFly, textureDie, initX, initY, Alignment.PLAYER);
     }
 
     @Override
     public void update(float delta) {
+        updateBullets(delta);
         super.update(delta);
         // TODO update player state based on addons?
     }
@@ -33,6 +33,6 @@ public class Player extends Ship {
 
     public void ejectSelected() {
         if (selectedAddOn == null) return;
-        super.addOns.removeValue(selectedAddOn, true);
+//        super.addOns.removeValue(selectedAddOn, true);
     }
 }
