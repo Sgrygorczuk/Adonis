@@ -18,6 +18,11 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.maps.MapLayer;
+import com.badlogic.gdx.maps.MapObject;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
+import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -50,6 +55,8 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
     */
     private Viewport viewport;             //The screen where we display things
     private Camera camera;                 //The camera viewing the viewport
+    private Viewport viewportTwo;             //The screen where we display things
+    private Camera cameraTwo;                 //The camera viewing the viewport
     private SpriteBatch batch = new SpriteBatch();             //Batch that holds all of the textures
 
     private ShapeRenderer shapeRendererEnemy;       //Creates the wire frames for enemies
@@ -84,13 +91,16 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
     //Textures
     private Texture popUpTexture;                       //Pop up menu to show menu buttons and Help screen
     private Texture backgroundUITexture;
-    private Texture backgroundGameTexture;
     private Texture skillBarTexture;
     private Texture highlightTexture;
     private Texture infoBoardTexture;
     private Texture energyOnTexture;
     private Texture energyOffTexture;
     private Texture dividerTexture;
+    private Texture healthTexture;
+    private Texture energyTexture;
+    private Texture healthSymbol;
+    private Texture energySymbol;
 
     private TextureRegion[][] playerFlyTexture;
     private TextureRegion[][] playerDieTexture;
@@ -106,6 +116,13 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
 
     // updated each frame; amount that was scrolled last frame
     private int scrollAmt = 0;
+
+    //Tiled
+    private TiledMap tiledMap;
+    private OrthogonalTiledMapRenderer orthogonalTiledMapRenderer;
+    private float levelHeight;
+    private float cameraY;
+    private float cameraYOriginal;
 
     //Names of buttons
     private String[] menuButtonText = new String[]{"Restart", "Help", "Sound Off", "Main Menu", "Sound On"};
@@ -149,7 +166,6 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         showTextures();     //Sets up textures
         showObjects();      //Sets up player and font
         showButtons();      //Sets up the buttons
-        setUpPlayer();
         showMusic();        //Sets up music
         if (developerMode) {
             showRender();
@@ -166,6 +182,13 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         camera.position.set(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, 0);    //Places the camera in the center of the view port
         camera.update();                                                    //Updates the camera
         viewport = new StretchViewport(WORLD_WIDTH, WORLD_HEIGHT, camera);  //Stretches the image to fit the screen
+        viewport.apply();
+
+        cameraTwo = new OrthographicCamera();                                    //Sets a 2D view
+        cameraTwo.position.set(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, 0);    //Places the camera in the center of the view port
+        cameraTwo.update();                                                    //Updates the camera
+        viewportTwo = new StretchViewport(WORLD_WIDTH, WORLD_HEIGHT, cameraTwo);  //Stretches the image to fit the screen
+        viewportTwo.apply();
     }
 
     /*
@@ -175,14 +198,14 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
     */
     private void showTextures() {
         popUpTexture = new Texture(Gdx.files.internal("UI/MenuPanel.png"));
-        backgroundUITexture = new Texture(Gdx.files.internal("UI/GameBackground.png"));
-        backgroundGameTexture = new Texture(Gdx.files.internal("UI/MainMenuBackground.png"));
-        skillBarTexture = new Texture(Gdx.files.internal("UI/SkillBar.png"));
+        backgroundUITexture = new Texture(Gdx.files.internal("UI/GameBackground.png"));skillBarTexture = new Texture(Gdx.files.internal("UI/SkillBar.png"));
         highlightTexture = new Texture(Gdx.files.internal("UI/Highlight.png"));
         infoBoardTexture = new Texture(Gdx.files.internal("UI/InformationPanel.png"));
-        energyOnTexture = new Texture(Gdx.files.internal("UI/Energy.png"));
+        energyOnTexture = new Texture(Gdx.files.internal("UI/PilotEnergy.png"));
         energyOffTexture = new Texture(Gdx.files.internal("UI/EnergyOff.png"));
         dividerTexture = new Texture(Gdx.files.internal("UI/Divider.png"));
+        healthTexture = new Texture(Gdx.files.internal("UI/Health.png"));
+        energyTexture = new Texture(Gdx.files.internal("UI/Energy.png"));
 
         Texture playerFlyTexturePath = new Texture(Gdx.files.internal("Sprites/PlayerSpriteSheetFly.png"));
         playerFlyTexture = new TextureRegion(playerFlyTexturePath).split(playerFlyTexturePath.getWidth()/4, playerFlyTexturePath.getHeight());
@@ -194,9 +217,9 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         Texture enemyOneDiePath = new Texture(Gdx.files.internal("Sprites/EnemyOneSpriteSheetDie.png"));
         enemyOneDieTexture =  new TextureRegion(enemyOneDiePath).split(enemyOneDiePath.getWidth()/9, enemyOneDiePath.getHeight());
 
-        Texture enemyTwoFlyPath = new Texture(Gdx.files.internal("Sprites/EnemyOneSpriteSheetFly.png"));
+        Texture enemyTwoFlyPath = new Texture(Gdx.files.internal("Sprites/EnemyTwoSpriteSheetFly.png"));
         enemyTwoFlyTexture = new TextureRegion(enemyTwoFlyPath).split(enemyTwoFlyPath.getWidth()/4, enemyTwoFlyPath.getHeight());
-        Texture enemyTwoDiePath = new Texture(Gdx.files.internal("Sprites/EnemyOneSpriteSheetDie.png"));
+        Texture enemyTwoDiePath = new Texture(Gdx.files.internal("Sprites/EnemyTwoSpriteSheetDie.png"));
         enemyTwoDieTexture =  new TextureRegion(enemyTwoDiePath).split(enemyTwoDiePath.getWidth()/9, enemyTwoDiePath.getHeight());
 
         Texture playerLaserTexturePath = new Texture(Gdx.files.internal("Sprites/PlayerShot.png"));
@@ -229,20 +252,19 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         setUpExitButton();      //Sets up the button used to exit Help
     }
 
-    private void setUpPlayer() {
-        // TODO sprite sheet for player; right now we just have a static image
-        this.player = new Player(playerFlyTexture, playerDieTexture);
-    }
-
-    private void spawnEnemy(EnemyType enemyType) {
-        // spawn a little above the screen at random x
-        Vector2 spawnPos = new Vector2(MathUtils.random(100 + TILE_WIDTH, 380 - TILE_WIDTH), WORLD_HEIGHT + TILE_HEIGHT);
+    private void spawnEnemy(EnemyType enemyType, float x, float y) {
         Ship enemy;
-
         switch (enemyType) {
-            case DUMMY:
+            case DUMMY: {
+                enemy = new DummyEnemy(enemyOneFlyTexture, enemyOneDieTexture, x, y);
+                break;
+            }
+            case DUMMY_TWO: {
+                enemy = new DummyEnemy(enemyTwoFlyTexture, enemyTwoDieTexture, x, y);
+                break;
+            }
             default:
-                enemy = new DummyEnemy(enemyOneFlyTexture, enemyOneDieTexture, spawnPos.x, spawnPos.y);
+                enemy = new DummyEnemy(enemyOneFlyTexture, enemyOneDieTexture, x, y);
         }
 
         this.enemies.add(enemy);
@@ -259,8 +281,8 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
 
         //Place the button
         menuButtons[0] = new ImageButton(new TextureRegionDrawable(buttonSpriteSheet[0][0]), new TextureRegionDrawable(buttonSpriteSheet[0][1]));
-        menuButtons[0].setPosition(430 - 93/2f, WORLD_HEIGHT - 20 - 21.15f);
-        menuButtons[0].setWidth(93);
+        menuButtons[0].setPosition(432 - 90/2f, WORLD_HEIGHT - 20 - 21.15f);
+        menuButtons[0].setWidth(90);
         menuButtons[0].setHeight(21.15f);
         menuStage.addActor(menuButtons[0]);
 
@@ -393,6 +415,58 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
             bitmapFont = adonis.getAssetManager().get("Fonts/Font.fnt");
         }
         bitmapFont.getData().setScale(0.6f);
+
+        //Gets the map
+        tiledMap = adonis.getAssetManager().get("Tiled/AdonisMap.tmx");
+        //Makes it into a drawing that we can call
+        orthogonalTiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap, batch);
+        //Center the drawing based on the camera
+        orthogonalTiledMapRenderer.setView((OrthographicCamera) camera);
+
+        TiledMapTileLayer tiledMapTileLayer = (TiledMapTileLayer) tiledMap.getLayers().get(0);
+        levelHeight = tiledMapTileLayer.getHeight() * tiledMapTileLayer.getTileHeight();
+
+        cameraYOriginal =  cameraY = camera.position.y;
+
+        populateEnemies();
+        populatePlayer();
+        //populateBoss();
+    }
+
+    /*populateEnemies
+    Input: Void
+    Output: Void
+    Purpose: Gets the skull layer from the tiled map and generates skull collectibles from it
+    */
+    private void populatePlayer(){
+        //Grab the layer from tiled map
+        MapLayer mapLayer = tiledMap.getLayers().get("Player");
+        //For each instance of that in the layered map create a skull collectible at it's position
+        for(MapObject mapObject : mapLayer.getObjects()){ player = new Player(playerFlyTexture, playerDieTexture,
+                mapObject.getProperties().get("x",Float.class),
+                mapObject.getProperties().get("y",Float.class)); }
+    }
+
+    /*
+    Input: Void
+    Output: Void
+    Purpose: Gets the skull layer from the tiled map and generates skull collectibles from it
+    */
+    private void populateEnemies(){
+        //Grab the layer from tiled map
+        MapLayer mapLayer = tiledMap.getLayers().get("EnemyOne");
+        //For each instance of that in the layered map create a skull collectible at it's position
+        for(MapObject mapObject : mapLayer.getObjects()){ spawnEnemy(EnemyType.DUMMY,
+                mapObject.getProperties().get("x",Float.class),
+                mapObject.getProperties().get("y",Float.class));
+        }
+
+        mapLayer = tiledMap.getLayers().get("EnemyTwo");
+        //For each instance of that in the layered map create a skull collectible at it's position
+        for(MapObject mapObject : mapLayer.getObjects()){ spawnEnemy(EnemyType.DUMMY_TWO,
+                mapObject.getProperties().get("x",Float.class),
+                mapObject.getProperties().get("y",Float.class));
+        }
     }
 
     /**
@@ -527,14 +601,10 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
 
         spawnTimer -= delta;
 
-        if (developerMode){
-            devInstallAddon();
+        if (developerMode){ devInstallAddon();
         }
         handleInput();
-        if (spawnTimer <= 0) {
-            spawnEnemy(EnemyType.DUMMY);
-            spawnTimer = ENEMY_SPAWN_TIME + MathUtils.random(-5f, 5f);
-        }
+
         for (Bullet bullet : projectiles) {
             bullet.update(delta);
 
@@ -570,9 +640,10 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
             if (isGameEnded) return;
         }
 
-        for (Ship enemy : enemies) {
-            enemy.update(delta);
-        }
+        updateCamera(delta);
+
+
+        for (Ship enemy : enemies) { if(enemy.hitbox.y - enemy.hitbox.height <= camera.position.y + WORLD_HEIGHT/2f) {enemy.update(delta);} }
     }
 
     private void handleInput() {
@@ -582,7 +653,10 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         boolean down = Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.DOWN);
 
         if(Gdx.input.isButtonPressed(Input.Buttons.LEFT)){
-            player.fire();
+            projectiles.add(new Bullet(Alignment.PLAYER, Direction.UP,
+                    player.hitbox.getX()+player.hitbox.getWidth()/4f,
+                    player.hitbox.getY()+2*player.hitbox.height/3f,
+                    playerLaserTexture));
         }
 
         if (left && up) {
@@ -622,6 +696,20 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         scrollAmt = 0;
     }
 
+    /*
+    Input: Void
+    Output: Void
+    Purpose: Updates the camera position
+    */
+    public void updateCamera(float delta){
+        if(cameraY + delta*100 + WORLD_HEIGHT < levelHeight){
+            cameraY += delta*100;
+            camera.position.set(camera.position.x, cameraY, camera.position.z);
+            camera.update();
+            orthogonalTiledMapRenderer.setView((OrthographicCamera) camera);
+        }
+    }
+
     /**
     Input: Void
     Output: Void
@@ -630,11 +718,11 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
 
     private void devInstallAddon(){
 
-        if(Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_0)){
+        if(Gdx.input.isKeyJustPressed(Input.Keys.NUM_0)){
             player.onInstall(AddOnData.GUN);
-        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_1)) {
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) {
             player.onInstall(AddOnData.BATTERY);
-        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_2)) {
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) {
             player.onDestroy(AddOnData.BATTERY);
         }
     }
@@ -658,11 +746,20 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
     Purpose: Central drawing function
     */
     private void draw() {
-        batch.setProjectionMatrix(camera.projection);
-        batch.setTransformMatrix(camera.view);
+        batch.setProjectionMatrix(cameraTwo.projection);
+        batch.setTransformMatrix(cameraTwo.view);
         batch.begin();
         batch.draw(backgroundUITexture, 0, 0, WORLD_WIDTH, WORLD_HEIGHT);
-        batch.draw(backgroundGameTexture, 100, 0, 280, WORLD_HEIGHT);
+        batch.end();
+
+        batch.setProjectionMatrix(camera.projection);
+        batch.setTransformMatrix(camera.view);
+        //Draws tiled map
+        orthogonalTiledMapRenderer.render();
+
+        batch.setProjectionMatrix(cameraTwo.projection);
+        batch.setTransformMatrix(cameraTwo.view);
+        batch.begin();
         batch.draw(infoBoardTexture, 390, 30, 80, 200);
         drawAddOnInfo();
         drawSkillBar();
@@ -679,8 +776,8 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         for (Ship enemy : enemies) { enemy.draw(batch); }
         for (Bullet bullet : projectiles) { bullet.draw(batch); }
 
-        batch.draw(dividerTexture, 98, 0, 4, WORLD_HEIGHT);
-        batch.draw(dividerTexture, 378, 0, 4, WORLD_HEIGHT);
+        batch.draw(dividerTexture, 92, 0, 4, WORLD_HEIGHT);
+        batch.draw(dividerTexture, 380, 0, 4, WORLD_HEIGHT);
         batch.end();
 
         //Draw open menu button
@@ -722,17 +819,23 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
     }
 
     private void drawSkillBar(){
-        batch.draw(skillBarTexture, 50 - 47/2f, 0, 47, 200);
-        batch.draw(highlightTexture, 51 - 22/2f, 26 + 15.2f * itemSelected, 22, 22);
+        batch.draw(skillBarTexture, 50 - 47/2f, 10, 47, 200);
+        batch.draw(highlightTexture, 51 - 22/2f, 36 + 15.2f * itemSelected, 22, 22);
     }
 
     private void drawStats(){
+        //TODO draw meters and icons for health and energy
+        if(player.healthBarVisible){ batch.draw(energyOffTexture, 10, WORLD_HEIGHT - 65, 80, 55); }
+        else{
+            batch.draw(energyOnTexture, 10, WORLD_HEIGHT - 65, 80, 55);
+            batch.draw(healthTexture, 14, WORLD_HEIGHT - 44, (float) 73 * player.health/player.maxHealth, 7);
+        }
 
-        //TODO add AddOn check to see if UI should be on
-        if(true){ batch.draw(energyOffTexture, 10, WORLD_HEIGHT - 65, 80, 55); }
-        else{ batch.draw(energyOnTexture, 10, WORLD_HEIGHT - 65, 80, 55); }
-        if(true){ batch.draw(energyOffTexture, 10, WORLD_HEIGHT - 115, 80, 55); }
-        else{ batch.draw(energyOnTexture, 10, WORLD_HEIGHT - 115, 80, 55); }
+        if(player.energyBarVisible){ batch.draw(energyOffTexture, 10, WORLD_HEIGHT - 115, 80, 55); }
+        else{
+            batch.draw(energyOnTexture, 10, WORLD_HEIGHT - 115, 80, 55);
+            batch.draw(energyTexture, 14, WORLD_HEIGHT - 94, 73 * (float) player.energy/player.maxEnergy, 7);
+        }
     }
 
     private void drawMenuText(){
@@ -765,26 +868,12 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
     Purpose: Draws the hit boxes and the phone stats
     */
     private void drawDeveloperInfo() {
-        //Batch setting up texture
-        int x = (int) Gdx.input.getAccelerometerX();
-        int y = (int) Gdx.input.getAccelerometerY();
-        int z = (int) Gdx.input.getAccelerometerZ();
-//        centerText(bitmapFontDeveloper, "X: " + x, 40, 300);
-//        centerText(bitmapFontDeveloper, "Y: " + y, 40, 280);
-//        centerText(bitmapFontDeveloper, "Z: " + z, 40, 260);
         centerText(bitmapFontDeveloper, "Player X:" + player.hitbox.getX(), 80, 300);
         centerText(bitmapFontDeveloper, "Player Y:" + player.hitbox.getY(), 80, 280);
         centerText(bitmapFontDeveloper, "Player Max Health:" + player.maxHealth, 80, 260);
         centerText(bitmapFontDeveloper, "Player Health:" + player.health, 80, 240);
         centerText(bitmapFontDeveloper, "Player Max Energy:" + player.maxEnergy, 80, 220);
         centerText(bitmapFontDeveloper, "Player Energy:" + player.energy, 80, 200);
-        if (Math.abs(x) > Math.abs(y) && Math.abs(x) > Math.abs(z)) {
-            centerText(bitmapFontDeveloper, "Surface X", 40, 240);
-        } else if (Math.abs(y) > Math.abs(x) && Math.abs(y) > Math.abs(z)) {
-            centerText(bitmapFontDeveloper, "Surface Y", 40, 240);
-        } else if (Math.abs(z) > Math.abs(x) && Math.abs(z) > Math.abs(y)) {
-            centerText(bitmapFontDeveloper, "Surface Z", 40, 240);
-        }
     }
 
     /**

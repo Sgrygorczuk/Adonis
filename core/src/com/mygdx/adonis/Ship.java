@@ -113,7 +113,7 @@ public abstract class Ship {
         }
 
         TextureRegion currentFrame = (TextureRegion) flyAnimation.getKeyFrame(animationTime);
-        spriteBatch.draw(currentFrame, hitbox.x, hitbox.y, TILE_WIDTH * 5.5f, TILE_HEIGHT * 5.5f);
+        spriteBatch.draw(currentFrame, hitbox.x, hitbox.y, hitbox.width, hitbox.height);
     }
 
     public void move(Direction dir) {

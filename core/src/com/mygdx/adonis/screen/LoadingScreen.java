@@ -12,6 +12,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.mygdx.adonis.Adonis;
@@ -101,6 +102,7 @@ public class LoadingScreen extends ScreenAdapter{
         adonis.getAssetManager().load("SFX/MMB_Down.wav", Sound.class);
         adonis.getAssetManager().load("SFX/MMB_Up.wav", Sound.class);
 
+        adonis.getAssetManager().load("Tiled/AdonisMap.tmx", TiledMap.class);            //Loads the map
     }
 
     /*

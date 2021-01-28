@@ -10,11 +10,6 @@ public class Player extends Ship {
 
     public AddOn selectedAddOn;
 
-    public Player(TextureRegion[][] textureFly, TextureRegion[][] textureDie) {
-        // spawn player near the bottom of the screen by default
-        this(textureFly, textureDie, WORLD_WIDTH / 2, WORLD_HEIGHT / 10);
-    }
-
     public Player(TextureRegion[][] textureFly, TextureRegion[][] textureDie, float initX, float initY) {
         super(textureFly, textureDie, initX, initY, Alignment.PLAYER);
     }

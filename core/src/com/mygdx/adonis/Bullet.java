@@ -37,20 +37,18 @@ public class Bullet {
      Purpose: Sets up the animation loops in all of the directions
      */
     protected void setUpAnimation(){
-        animation= new Animation<>(0.25f, this.texture[0][0], this.texture[0][1]);
+        animation= new Animation<>(0.033f, this.texture[0][0], this.texture[0][1]);
         animation.setPlayMode(Animation.PlayMode.NORMAL);
     }
 
     public void update(float delta) {
-        if(this.alignment == Alignment.PLAYER){
-            this.velocity.y = 1;
-        } else {
-            this.velocity.y = -1;
-        }
-        float newX = hitbox.getX() + (velocity.x * delta*TILE_WIDTH*10);
-        float newY = hitbox.getY() + (velocity.y * delta*TILE_HEIGHT*10);
+        if(this.alignment == Alignment.PLAYER){ this.velocity.y = 1; }
+        else { this.velocity.y = -1; }
 
-        hitbox.setCenter(newX, newY);
+        hitbox.x = hitbox.getX() + dir.getX();
+        hitbox.y = hitbox.getY() + dir.getY() * 10;
+
+        animationTime += delta;
     }
 
     public void dispose(){
