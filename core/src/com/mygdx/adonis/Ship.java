@@ -113,7 +113,7 @@ public abstract class Ship {
         }
 
         TextureRegion currentFrame = (TextureRegion) flyAnimation.getKeyFrame(animationTime);
-        spriteBatch.draw(currentFrame, hitbox.x, hitbox.y, TILE_WIDTH, TILE_HEIGHT);
+        spriteBatch.draw(currentFrame, hitbox.x, hitbox.y, TILE_WIDTH * 5.5f, TILE_HEIGHT * 5.5f);
     }
 
     public void move(Direction dir) {
@@ -127,12 +127,11 @@ public abstract class Ship {
         }
     }
 
-    public void onInstall(int id) {
-        AddOnData newAddOn = AddOnData.getById(id);
-        this.addOns.add(newAddOn);
-        System.out.println(newAddOn.name());
+    public void onInstall(AddOnData addOn) {
+        this.addOns.add(addOn);
+        System.out.println(addOn.name());
         // TODO: install the addons - Paul
-        switch (newAddOn) {
+        switch (addOn) {
             case HEALTH_BAR_GUI:
                 // Allows ship to see Health Bar
                 healthBarVisible = true;
@@ -164,7 +163,7 @@ public abstract class Ship {
             case MISSILE_HOLDER:
                 // Allows user to hold missiles which they can pickup
                 break;
-            case MiSSILE_CATCHER:
+            case MISSILE_CATCHER:
                 // Allows user to suck the missile incoming but consumes energy
                 break;
             default:
@@ -176,6 +175,7 @@ public abstract class Ship {
     public void onUse(AddOnData addOn) {
         switch (addOn) {
             case GUN:
+                System.out.println("Fire");
                 // Fire Gun
                 // TODO fix this
 //                Bullet firedBullet = new Bullet(this.align, Direction.UP, (float) this.hitbox.x, (float) this.hitbox.y);
@@ -196,7 +196,7 @@ public abstract class Ship {
             case SHIELD:
                 // This is only required if shield uses energy on press/hold
                 break;
-            case MiSSILE_CATCHER:
+            case MISSILE_CATCHER:
                 // Catches missile in a short time period and puts it on cooldown
                 break;
             default:
@@ -205,8 +205,7 @@ public abstract class Ship {
         }
     }
 
-    public void onDestroy(int id) {
-        AddOnData addOn = AddOnData.getById(id);
+    public void onDestroy(AddOnData addOn) {
         if (this.addOns.contains(addOn, true)) {
             this.addOns.removeIndex(this.addOns.indexOf(addOn, true));
         } else {
@@ -244,7 +243,7 @@ public abstract class Ship {
             case MISSILE_HOLDER:
                 // decrease their max missile capacity
                 break;
-            case MiSSILE_CATCHER:
+            case MISSILE_CATCHER:
                 // Removes Missile Catcher Use
                 break;
             default:

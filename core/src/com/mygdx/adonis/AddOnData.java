@@ -17,7 +17,7 @@ public enum AddOnData {
     WEAPON_BOOST(56, "WEAPON_BOOST"), // upgrades weapon damaage
     WEAPON_UPGRADE(57, "WEAPON_UPGRADE"), // upgrades hitbox of weapons
     MISSILE_HOLDER(58, "MISSILE_HOLDER"), // Holds missile (needed for Missile Launcher)
-    MiSSILE_CATCHER(59, "MISSILE_CATCHER"); // Catches missile at the expense of energy
+    MISSILE_CATCHER(59, "MISSILE_CATCHER"); // Catches missile at the expense of energy
 
     private int WEAPON_END_IND = 49; // we're never gonna make 50 weapons
     private int id;

@@ -2,6 +2,9 @@ package com.mygdx.adonis.screen;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
@@ -25,6 +28,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.mygdx.adonis.AddOnData;
 import com.mygdx.adonis.Adonis;
 import com.mygdx.adonis.Alignment;
 import com.mygdx.adonis.Bullet;
@@ -40,7 +44,7 @@ import static com.mygdx.adonis.Consts.TILE_WIDTH;
 import static com.mygdx.adonis.Consts.WORLD_HEIGHT;
 import static com.mygdx.adonis.Consts.WORLD_WIDTH;
 
-class MainScreen extends ScreenAdapter {
+class MainScreen extends ScreenAdapter implements InputProcessor {
     /*
     Image processing -- Objects that modify the view and textures
     */
@@ -99,6 +103,9 @@ class MainScreen extends ScreenAdapter {
     private TextureRegion[][] addOnTexture;
 
     private final short NUM_BUTTONS = 5;
+
+    // updated each frame; amount that was scrolled last frame
+    private int scrollAmt = 0;
 
     //Names of buttons
     private String[] menuButtonText = new String[]{"Restart", "Help", "Sound Off", "Main Menu", "Sound On"};
@@ -209,7 +216,11 @@ class MainScreen extends ScreenAdapter {
     */
     private void showButtons() {
         menuStage = new Stage(new StretchViewport(WORLD_WIDTH, WORLD_HEIGHT));
-        Gdx.input.setInputProcessor(menuStage); //Gives control to the stage for clicking on buttons
+
+        InputMultiplexer mux = new InputMultiplexer(this, menuStage);
+        Gdx.input.setInputProcessor(mux); //Gives control to the stage for clicking on buttons
+
+
         //Sets up 6 Buttons
         menuButtons = new ImageButton[6];
 
@@ -569,8 +580,6 @@ class MainScreen extends ScreenAdapter {
         boolean right = Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT);
         boolean up = Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP);
         boolean down = Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.DOWN);
-        boolean mouseDown = Gdx.input.isKeyJustPressed(Input.Keys.NUM_2);
-        boolean mouseUp = Gdx.input.isKeyJustPressed(Input.Keys.NUM_3);
 
         if(Gdx.input.isButtonPressed(Input.Buttons.LEFT)){
             player.fire();
@@ -596,6 +605,9 @@ class MainScreen extends ScreenAdapter {
             player.stop();
         }
 
+        boolean mouseDown = scrollAmt > 0;
+        boolean mouseUp = scrollAmt < 0;
+
         if(mouseDown){
             itemSelected--;
             if(itemSelected < 0){itemSelected = 8;}
@@ -606,6 +618,8 @@ class MainScreen extends ScreenAdapter {
             if(itemSelected > 8){itemSelected = 0;}
             playMMBUp();
         }
+
+        scrollAmt = 0;
     }
 
     /**
@@ -617,11 +631,11 @@ class MainScreen extends ScreenAdapter {
     private void devInstallAddon(){
 
         if(Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_0)){
-            player.onInstall(1);
+            player.onInstall(AddOnData.GUN);
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_1)) {
-            player.onInstall(55);
+            player.onInstall(AddOnData.BATTERY);
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_2)) {
-            player.onDestroy(55);
+            player.onDestroy(AddOnData.BATTERY);
         }
     }
 
@@ -843,5 +857,46 @@ class MainScreen extends ScreenAdapter {
     public void dispose() {
         menuStage.dispose();
         music.dispose();
+    }
+
+    @Override
+    public boolean keyDown(int keycode) {
+        return false;
+    }
+
+    @Override
+    public boolean keyUp(int keycode) {
+        return false;
+    }
+
+    @Override
+    public boolean keyTyped(char character) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+        return false;
+    }
+
+    @Override
+    public boolean mouseMoved(int screenX, int screenY) {
+        return false;
+    }
+
+    @Override
+    public boolean scrolled(int amount) {
+        scrollAmt = amount;
+        return true;
     }
 }
