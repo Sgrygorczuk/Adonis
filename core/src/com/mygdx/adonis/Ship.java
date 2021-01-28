@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
+import com.mygdx.adonis.Alignment;
 import static com.mygdx.adonis.Consts.TILE_HEIGHT;
 import static com.mygdx.adonis.Consts.TILE_WIDTH;
 
@@ -76,7 +77,10 @@ public abstract class Ship {
     // collision isn't as simple as checking a single hitbox since each ship has multiple addons
     public boolean isColliding(Rectangle other) {
         // todo addons
-        return this.hitbox.contains(other);
+        System.out.println("Bullet Height: "+other.height);
+        System.out.println("Bullet Width: "+other.height);
+
+        return this.hitbox.overlaps(other);
     }
 
     public void takeDamage(int amt) {
@@ -102,9 +106,8 @@ public abstract class Ship {
         velocity.x = this.dir.getX();
         velocity.y = this.dir.getY();
 
-        float newX = hitbox.getX() + (velocity.x * delta * TILE_WIDTH * 5);
-        float newY = hitbox.getY() + (velocity.y * delta * TILE_HEIGHT * 5);
-        hitbox.setPosition(newX, newY);
+        hitbox.x= hitbox.x = hitbox.getX() + (velocity.x * delta * TILE_WIDTH * 5);
+        hitbox.y = hitbox.getY() + (velocity.y * delta * TILE_HEIGHT * 5);
     }
 
     public void draw(SpriteBatch spriteBatch) {
@@ -126,10 +129,17 @@ public abstract class Ship {
             this.onUse(addOn);
         }
     }
-
+    public boolean hasAddon(AddOnData addOn){
+        for(AddOnData addOnHave : this.addOns){
+            if(addOn == addOnHave){
+                return true;
+            }
+        }
+        return false;
+    }
     public void onInstall(AddOnData addOn) {
         this.addOns.add(addOn);
-        System.out.println(addOn.name());
+        System.out.println("Installed: "+addOn.name());
         // TODO: install the addons - Paul
         switch (addOn) {
             case HEALTH_BAR_GUI:
@@ -170,6 +180,7 @@ public abstract class Ship {
                 // Doesn't have an installation property
                 break;
         }
+        updateShip();
     }
 
     public void onUse(AddOnData addOn) {
@@ -250,6 +261,7 @@ public abstract class Ship {
                 // Doesn't have an uninstall property
                 break;
         }
+        updateShip();
     }
 
     public void updateBullets(float delta) {
@@ -265,6 +277,11 @@ public abstract class Ship {
             }
             i++;
         }
+    }
+
+    public void updateShip(){
+        this.hitbox.height = (1+(float)(0.5*this.addOns.size))*TILE_HEIGHT;
+        this.hitbox.width = (1+(float)(0.5*this.addOns.size))*TILE_WIDTH;
     }
 
     public void stop() {

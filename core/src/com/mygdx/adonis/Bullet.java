@@ -28,6 +28,7 @@ public class Bullet {
         this.hitbox = new Rectangle(x,y,TILE_WIDTH, TILE_HEIGHT);
         this.velocity = new  Vector2(0,0);
         this.texture = texture;
+        this.damage = 25;
         setUpAnimation();
     }
 

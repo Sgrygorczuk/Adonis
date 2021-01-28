@@ -601,15 +601,16 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
 
         spawnTimer -= delta;
 
-        if (developerMode){ devInstallAddon();
-        }
         handleInput();
-
-        for (Bullet bullet : projectiles) {
+        int bulletInd = 0;
+        while(bulletInd < projectiles.size){
+            Bullet bullet = projectiles.get(bulletInd);
+            boolean hit = false;
             bullet.update(delta);
 
-            if (player.isColliding(bullet.hitbox)) {
+            if (bullet.alignment != Alignment.PLAYER && player.isColliding(bullet.hitbox)) {
                 // player take damage
+                hit = true;
                 player.takeDamage(bullet.damage);
                 if (player.health <= 0) {
                     lives--;
@@ -622,13 +623,19 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
             for (int i = 0; i < enemies.size; i++) {
                 Ship enemy = enemies.get(i);
 
-                if (enemy.isColliding(bullet.hitbox)) {
+                if (bullet.alignment != Alignment.ENEMY && enemy.isColliding(bullet.hitbox)) {
                     // enemy take damage
+                    hit = true;
                     enemy.takeDamage(bullet.damage);
                     if (enemy.health <= 0) {
                         enemies.removeValue(enemy, true);
                     }
                 }
+            }
+            if(hit){
+                projectiles.removeValue(bullet, true);
+            } else {
+                bulletInd++;
             }
         }
 
@@ -652,13 +659,16 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         boolean up = Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP);
         boolean down = Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.DOWN);
 
-        if(Gdx.input.isButtonPressed(Input.Buttons.LEFT)){
+        if(Gdx.input.isButtonPressed(Input.Buttons.LEFT) && player.hasAddon(AddOnData.GUN)){
             projectiles.add(new Bullet(Alignment.PLAYER, Direction.UP,
-                    player.hitbox.getX()+player.hitbox.getWidth()/4f,
-                    player.hitbox.getY()+2*player.hitbox.height/3f,
+                    player.hitbox.getX()+player.hitbox.getWidth()/2f,
+                    player.hitbox.getY()+player.hitbox.getHeight(),
                     playerLaserTexture));
-        }
 
+        }
+        if (developerMode){
+            devInstallAddon();
+        }
         if (left && up) {
             player.move(Direction.UP_LEFT);
         } else if (left && down) {
@@ -717,12 +727,11 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
     */
 
     private void devInstallAddon(){
-
-        if(Gdx.input.isKeyJustPressed(Input.Keys.NUM_0)){
+        if(Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_0)){
             player.onInstall(AddOnData.GUN);
-        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) {
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_1)) {
             player.onInstall(AddOnData.BATTERY);
-        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) {
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_2)) {
             player.onDestroy(AddOnData.BATTERY);
         }
     }
@@ -874,6 +883,11 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         centerText(bitmapFontDeveloper, "Player Health:" + player.health, 80, 240);
         centerText(bitmapFontDeveloper, "Player Max Energy:" + player.maxEnergy, 80, 220);
         centerText(bitmapFontDeveloper, "Player Energy:" + player.energy, 80, 200);
+        ShapeRenderer playerhitbox = new ShapeRenderer();
+        playerhitbox.begin(ShapeRenderer.ShapeType.Line);
+        playerhitbox.setColor(Color.RED);
+        playerhitbox.rect(player.hitbox.x, player.hitbox.y, player.hitbox.width, player.hitbox.height);
+        playerhitbox.end();
     }
 
     /**
