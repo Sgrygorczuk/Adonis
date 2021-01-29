@@ -103,7 +103,11 @@ public class LoadingScreen extends ScreenAdapter{
         adonis.getAssetManager().load("SFX/MMB_Down.wav", Sound.class);
         adonis.getAssetManager().load("SFX/MMB_Up.wav", Sound.class);
         adonis.getAssetManager().load("SFX/PlayerShoot.wav", Sound.class);
+        adonis.getAssetManager().load("SFX/EnemyShoot.wav", Sound.class);
+        adonis.getAssetManager().load("SFX/Hit.wav", Sound.class);
         adonis.getAssetManager().load("SFX/Explosion.wav", Sound.class);
+        adonis.getAssetManager().load("SFX/PowerDown.wav", Sound.class);
+        adonis.getAssetManager().load("SFX/PowerUp.mp3", Sound.class);
 
 
         //Loading Tiled Map

@@ -24,17 +24,17 @@ public abstract class Ship {
 
     public int maxHealth;
     public int health;
-    public boolean healthBarVisible;
+    public boolean healthBarVisible = false;
 
     public int maxEnergy;
     public int energy;
     public int energyRecharge;
-    public boolean energyBarVisible;
+    public boolean energyBarVisible = false;
 
     public Direction dir;
 
     protected Array<Bullet> bulletsFired;
-    protected Array<AddOnData> addOns;
+    public Array<AddOnData> addOns;
 
     //Sprite sheet used
     protected TextureRegion[][] flySpriteSheet;
@@ -45,13 +45,23 @@ public abstract class Ship {
 
     //Current animation frame time
     public int damage;
+    private boolean invincibilityFlag;
+    private boolean flashing = false;
     protected float animationTime = 0;
     public boolean dieFlag = false;
 
     public float shootTimer = 0.0f;
-    public float shootLag = 0.15f;
+    public float shootLag = 0.15f; //Player Lag
 
     public float shipSpeed;
+
+    //Timer counting down until player can be hit again
+    private static final float INVINCIBILITY_TIME = 1F;
+    private float invincibilityTimer = INVINCIBILITY_TIME;
+
+    //Timer counting down until we turn the draw function on/Off
+    private static final float FLASHING_TIME = 0.1F;
+    private float flashingTimer = FLASHING_TIME;
 
     public Ship(TextureRegion[][] flySpriteSheet, TextureRegion[][] dieSpriteSheet, float initX, float initY, Alignment align) {
         // can multiply e.g. by 1.5, 1.2 to get more or less health
@@ -97,24 +107,46 @@ public abstract class Ship {
     }
 
     public void takeDamage(int amt) {
-        this.health -= amt;
-        if (health <= 0 && !dieFlag) {
-            shootTimer = 999f;
-            damage = 0;
-            animationTime = 0;
-            dieFlag = true;
+        if(!invincibilityFlag) {
+            this.health -= amt;
+            if (health <= 0 && !dieFlag) {
+                shootTimer = 999f;
+                damage = 0;
+                animationTime = 0;
+                dieFlag = true;
+            }
         }
     }
 
+    /**
+    Input: Float delta
+    Output: Void
+    Purpose: Ticks down to turn off invincibility
+    */
+    public void invincibilityTimer(float delta){
+        invincibilityTimer -= delta;
+        flashingTimer -= delta;
+
+        if (flashingTimer <= 0) {
+            flashingTimer = FLASHING_TIME;
+            flashing = !flashing;
+        }
+
+        if (invincibilityTimer <= 0) {
+            invincibilityTimer = INVINCIBILITY_TIME;
+            invincibilityFlag = false;
+            flashing = false;
+        }
+    }
+
+
     // TODO change velocity depending on game stuff
     public void update(float delta) {
-//        for (AddOnData addOn : this.addOns) {
-//             addOn.update(delta);
-//        }
-
         animationTime += delta;
 
         if (health > 0) {
+            if(invincibilityFlag){invincibilityTimer(delta);}
+
             if (this.health > this.maxHealth) {
                 this.health = this.maxHealth;
             }
@@ -127,8 +159,6 @@ public abstract class Ship {
 
             velocity.x = this.dir.getX();
             velocity.y = this.dir.getY();
-
-
 
             hitbox.x = hitbox.getX() + (velocity.x * delta * TILE_WIDTH * shipSpeed);
             hitbox.y = hitbox.getY() + (velocity.y * delta * TILE_HEIGHT * shipSpeed);
@@ -143,12 +173,7 @@ public abstract class Ship {
         this.dir = dir;
     }
 
-    public void fire() {
-        for (AddOnData addOn : this.addOns) {
-//            System.out.println("Firing: "+addOn.name());
-            this.onUse(addOn);
-        }
-    }
+    public void setInvincibilityFlag(){invincibilityFlag = true;}
 
     public void onInstall(AddOnData addOn) {
         if(this.addOns.size >= 9){
@@ -169,12 +194,12 @@ public abstract class Ship {
                 // Allows ship to see Energy Bar
                 energyBarVisible = true;
                 break;
-            case HEALING_STATION:
+            //case HEALING_STATION:
                 // Allows ship to hold and use health packs they pick up
-                break;
-            case ENERGY_STATION:
+                //break;
+            //case ENERGY_STATION:
                 // Allows ship to hold and use energy packs they pick up
-                break;
+                //break;
             case SHIELD:
                 // Has a shield in a certain direction of installation
                 // Shield either consumes energy while on or when it gets hit
@@ -183,22 +208,22 @@ public abstract class Ship {
                 // Holds energy and lets you use weapons and upgrades that require it
                 this.maxEnergy += BATTERY_SIZE;
                 break;
-            case CHARGER:
-                this.energyRecharge *= ENERGY_RECHARGE;
-                break;
+            //case CHARGER:
+                //this.energyRecharge *= ENERGY_RECHARGE;
+                //break;
             case WEAPON_BOOST:
                 // Upgrades the damage of weapons
                 damage *= 2;
                 break;
-            case WEAPON_UPGRADE:
+            //case WEAPON_UPGRADE:
                 // Upgrades the hitboxes of weapons
-                break;
-            case MISSILE_HOLDER:
+                //break;
+            //case MISSILE_HOLDER:
                 // Allows user to hold missiles which they can pickup
-                break;
-            case MISSILE_CATCHER:
+                //break;
+            //case MISSILE_CATCHER:
                 // Allows user to suck the missile incoming but consumes energy
-                break;
+                //break;
             default:
                 // Doesn't have an installation property
                 break;
@@ -207,31 +232,31 @@ public abstract class Ship {
 
     public void onUse(AddOnData addOn) {
         switch (addOn) {
-            case GUN:
-                System.out.println("Fire");
+            //case GUN:
+                //System.out.println("Fire");
                 // Fire Gun
                 // TODO fix this
 //                Bullet firedBullet = new Bullet(this.align, Direction.UP, (float) this.hitbox.x, (float) this.hitbox.y);
 //                this.bulletsFired.add(firedBullet);
-                break;
-            case LASER_GUN:
+                //break;
+            //case LASER_GUN:
                 // Fire Laser Gun if required energy is met
-                break;
-            case MISSILE_LAUNCHER:
+               // break;
+            //case MISSILE_LAUNCHER:
                 // Fires Missile
-                break;
-            case HEALING_STATION:
+                //break;
+            //case HEALING_STATION:
                 // Uses Healing Kit if they have a healing kit
-                break;
-            case ENERGY_STATION:
+                //break;
+            //case ENERGY_STATION:
                 // Regenerates energy if they have an energy kit
-                break;
+               // break;
             case SHIELD:
                 // This is only required if shield uses energy on press/hold
                 break;
-            case MISSILE_CATCHER:
+            //case MISSILE_CATCHER:
                 // Catches missile in a short time period and puts it on cooldown
-                break;
+                //break;
             default:
                 // Has no application on use
                 break;
@@ -260,12 +285,12 @@ public abstract class Ship {
                 // Removes Energy Bar GUI
                 energyBarVisible = false;
                 break;
-            case HEALING_STATION:
+            //case HEALING_STATION:
                 // Decrease max health kit capacity
-                break;
-            case ENERGY_STATION:
+                //break;
+            //case ENERGY_STATION:
                 // Decrease max energy kit capacity
-                break;
+               // break;
             case SHIELD:
                 // remove use of shield
                 break;
@@ -273,22 +298,22 @@ public abstract class Ship {
                 // Removes their max energy
                 this.maxEnergy -= BATTERY_SIZE;
                 break;
-            case CHARGER:
-                this.energyRecharge /= ENERGY_RECHARGE;
-                break;
+            //case CHARGER:
+                //this.energyRecharge /= ENERGY_RECHARGE;
+                //break;
             case WEAPON_BOOST:
                 // Removes damage upgrade
                 damage /= 2;
                 break;
-            case WEAPON_UPGRADE:
+            //case WEAPON_UPGRADE:
                 // removes hitbox upgrade
-                break;
-            case MISSILE_HOLDER:
+                //break;
+            //case MISSILE_HOLDER:
                 // decrease their max missile capacity
-                break;
-            case MISSILE_CATCHER:
+                //break;
+            //case MISSILE_CATCHER:
                 // Removes Missile Catcher Use
-                break;
+                //break;
             default:
                 // Doesn't have an uninstall property
                 break;
@@ -352,22 +377,20 @@ public abstract class Ship {
     }
 
     public void draw(SpriteBatch spriteBatch) {
-//        for (AddOnData addOn : this.addOns) {
-//             addOn.draw(spriteBatch);
-//        }
+        if (!flashing) {
+            TextureRegion currentFrame;
 
-        TextureRegion currentFrame;
+            float width = hitbox.width; // The die sprite is wider
+            float offset = 0;           //Need to offset the width change
+            if (health > 0) {
+                currentFrame = flyAnimation.getKeyFrame(animationTime);
+            } else {
+                currentFrame = dieAnimation.getKeyFrame(animationTime);
+                width *= (float) dieSpriteSheet[0][0].getRegionWidth() / flySpriteSheet[0][0].getRegionWidth();
+                offset = (width - hitbox.width) / 2f;
+            }
 
-        float width = hitbox.width; // The die sprite is wider
-        float offset = 0;           //Need to offset the width change
-        if (health > 0) {
-            currentFrame = flyAnimation.getKeyFrame(animationTime);
-        } else {
-            currentFrame = dieAnimation.getKeyFrame(animationTime);
-            width *= (float) dieSpriteSheet[0][0].getRegionWidth() / flySpriteSheet[0][0].getRegionWidth();
-            offset = (width - hitbox.width) / 2f;
+            spriteBatch.draw(currentFrame, hitbox.x - offset, hitbox.y, width, hitbox.height);
         }
-
-        spriteBatch.draw(currentFrame, hitbox.x - offset, hitbox.y, width, hitbox.height);
     }
 }

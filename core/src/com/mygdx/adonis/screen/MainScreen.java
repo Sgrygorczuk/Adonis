@@ -23,7 +23,6 @@ import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
@@ -32,6 +31,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.mygdx.adonis.AddOn;
 import com.mygdx.adonis.AddOnData;
 import com.mygdx.adonis.Adonis;
 import com.mygdx.adonis.Alignment;
@@ -42,7 +42,8 @@ import com.mygdx.adonis.EnemyType;
 import com.mygdx.adonis.Player;
 import com.mygdx.adonis.Ship;
 
-import static com.mygdx.adonis.Consts.BULLET_DAMAGE;
+import static com.mygdx.adonis.Consts.ADD_ON_TILE;
+import static com.mygdx.adonis.Consts.BULLET_TILE_SIZE;
 import static com.mygdx.adonis.Consts.LEFT_BOUND;
 import static com.mygdx.adonis.Consts.RIGHT_BOUND;
 import static com.mygdx.adonis.Consts.WORLD_HEIGHT;
@@ -73,6 +74,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
     private Player player;
     private final Array<Ship> enemies = new Array<>();
     private final Array<Bullet> projectiles = new Array<>();
+    private final Array<AddOn> addOns = new Array<>();
 
     //Music that will start
     private Music music;
@@ -118,6 +120,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
     //Flags
     private int itemSelected = 8;
     private boolean developerMode = true;      //Developer mode shows hit boxes and phone data
+    private boolean startGame = false;
     private boolean isPaused = false;         //Stops the game from updating
     private boolean isGameEnded = false;            //Tells us game has been lost
     private float sfxVolume = 1f;               //Current sfx volume
@@ -265,6 +268,15 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         }
 
         this.enemies.add(enemy);
+    }
+
+    /**
+
+     */
+    private void spawnAddOn(int id, float x, float y) {
+        AddOn addOn = new AddOn(addOnTexture[id][0], x, y, id);
+
+        this.addOns.add(addOn);
     }
 
     /**
@@ -483,7 +495,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
     private void showMusic() {
         music = adonis.getAssetManager().get("Music/GameMusic.mp3", Music.class);
         music.setLooping(true);
-        music.setVolume(.35f);
+        music.setVolume(.1f);
         music.play();
     }
 
@@ -515,11 +527,41 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         adonis.getAssetManager().get("SFX/PlayerShoot.wav", Sound.class).play(0.1f * sfxVolume);
     }
 
+
+    /**
+     * Play sound effect for when button is pressed
+     */
+    private void playEnemyShoot() {
+        adonis.getAssetManager().get("SFX/EnemyShoot.wav", Sound.class).play(0.05f * sfxVolume);
+    }
+
+    /**
+     * Play sound effect for when button is pressed
+     */
+    private void playHit() {
+        adonis.getAssetManager().get("SFX/Hit.wav", Sound.class).play(0.1f * sfxVolume);
+    }
+
+
     /**
      * Play sound effect for when button is pressed
      */
     private void playExplosion() {
         adonis.getAssetManager().get("SFX/Explosion.wav", Sound.class).play(0.1f * sfxVolume);
+    }
+
+    /**
+     * Play sound effect for when button is pressed
+     */
+    private void playPowerDown() {
+        adonis.getAssetManager().get("SFX/PowerDown.wav", Sound.class).play(1f * sfxVolume);
+    }
+
+    /**
+     * Play sound effect for when button is pressed
+     */
+    private void playPowerUp() {
+        adonis.getAssetManager().get("SFX/PowerUp.mp3", Sound.class).play(0.1f * sfxVolume);
     }
 
 
@@ -553,8 +595,11 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
      */
     @Override
     public void render(float delta) {
-        if (!isPaused) {
+        if (!isPaused && startGame) {
             update(delta);
+        }
+        else{
+            if(Gdx.input.isKeyJustPressed(Input.Keys.ANY_KEY)){startGame = true;}
         }
 
         clearScreen();
@@ -599,10 +644,10 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         shapeRendererUser.begin(ShapeRenderer.ShapeType.Line);       //Sets up to draw lines
         player.drawDebug(shapeRendererUser);
         for (Bullet bullet : projectiles) {
-//            if (bullet.alignment == Alignment.PLAYER) {
+                if (bullet.alignment == Alignment.PLAYER) {
                 bullet.drawDebug(shapeRendererUser);
 
-//            }
+                }
         }
         shapeRendererUser.end();
     }
@@ -628,6 +673,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         shapeRendererCollectible.setProjectionMatrix(uiCamera.projection);
         shapeRendererCollectible.setTransformMatrix(uiCamera.view);
         shapeRendererCollectible.begin(ShapeRenderer.ShapeType.Line);
+        for (AddOn addOn : addOns) { addOn.drawDebug(shapeRendererCollectible); }
         shapeRendererCollectible.end();
     }
 
@@ -640,6 +686,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         handleInput();              //Checks user input
         updatePlayer(delta);        //Updates player ship based on input
         updateEnemies(delta);       //Updates enemy ship actions
+        updateAddOns(delta);        //Updates addOns
         updateCollision(delta);     //Check for collision between ships and bullets
         updateCamera(delta);        //Update Tiled camera placement and menu stage size.
     }
@@ -652,14 +699,21 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
      */
     public void updatePlayer(float delta) {
         player.update(delta);
-        //If player has 0 lives end the game
-//        System.out.println("Player: "+player.hitbox.x+", "+player.hitbox.y);
         if (player.health == 0) {
             endGame();
-            // we don't need to update anymore if the game is over
             if (isGameEnded) {
+                music.stop();
+                adonis.setScreen(new MenuScreen(adonis));
                 //TODO make pop for user to restart or quit to main menu
             }
+        }
+    }
+
+    public void updateAddOns(float delta){
+        for (AddOn addOn : addOns) {
+            addOn.update(delta);
+
+            if (addOn.hitbox.y < -addOn.hitbox.height) { addOns.removeValue(addOn, true); }
         }
     }
 
@@ -671,11 +725,30 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
      */
     public void updateEnemies(float delta) {
         for (Ship enemy : enemies) {
-//            if(enemy.dieFlag) continue;
-            if (enemy.hitbox.y - enemy.hitbox.height <= tiledCamera.position.y + WORLD_HEIGHT / 2f) {
-                enemy.update(delta);
+             enemy.update(delta);
+
+            if (enemy.health <= 0 && enemy.getBlowUpFlag() || enemy.hitbox.y < -enemy.hitbox.height) {
+                if(enemy.hitbox.y > -enemy.hitbox.height) {playExplosion();}
+                spawnAddOn(MathUtils.random(0, 4), enemy.hitbox.x + enemy.hitbox.getWidth()/2f - ADD_ON_TILE/2f,
+                        enemy.hitbox.y + enemy.hitbox.height/2f - ADD_ON_TILE/2f);
+                enemies.removeValue(enemy, true);
+            }
+
+            if (enemy.dieFlag) continue;
+
+            if(enemy.hitbox.y <= WORLD_HEIGHT) {
+                if (enemy.shootTimer <= 0) {
+                    projectiles.add(new Bullet(Alignment.ENEMY, Direction.DOWN,
+                            enemy.hitbox.getX() + enemy.hitbox.getWidth()/2f - BULLET_TILE_SIZE/2f,
+                            enemy.hitbox.getY(),
+                            enemyLaserTexture,
+                            enemy.damage));
+                    enemy.shootTimer = MathUtils.random(1f, 2f);
+                    playEnemyShoot();
+                }
             }
         }
+
     }
 
     /**
@@ -694,12 +767,25 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
                 continue;
             }
 
+            for (AddOn addOn : addOns) {
+                if(player.isColliding(addOn.hitbox) && player.addOns.size < 9){
+                    player.onInstall(AddOnData.getById(addOn.id));
+                    addOns.removeValue(addOn, true);
+                    playPowerUp();
+                }
+
+            }
+
             if (bullet.alignment != Alignment.PLAYER && player.isColliding(bullet.hitbox)) {
                 // player take damage
                 hit = true;
                 player.takeDamage(bullet.damage);
+                player.setInvincibilityFlag();
+                playHit();
                 if (player.health <= 0) {
-                    player.health--;
+                    playExplosion();
+                    player.health = 0;
+                    isGameEnded = true;
                 }
             }
 
@@ -711,6 +797,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
                 if (bullet.alignment != Alignment.ENEMY && enemy.isColliding(bullet.hitbox)) {
                     // enemy take damage
                     hit = true;
+                    playHit();
                     enemy.takeDamage(bullet.damage);
                 }
             }
@@ -718,13 +805,6 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
                 projectiles.removeValue(bullet, true);
             } else {
                 bulletInd++;
-            }
-        }
-
-        for (Ship enemy : enemies) {
-            if (enemy.health <= 0 && enemy.getBlowUpFlag()) {
-                playExplosion();
-                enemies.removeValue(enemy, true);
             }
         }
     }
@@ -758,8 +838,10 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         handleScrolling();          //Checks user scroll input
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
             System.out.println(8-itemSelected);
-            player.ejectSelected(8-itemSelected);
+            boolean soundCheck = player.ejectSelected(8-itemSelected);
+            if(soundCheck){playPowerDown();}
         }
+
         //Allows user to turn on dev mode
         if (Gdx.input.isKeyJustPressed(Input.Keys.TAB)) {
             developerMode = !developerMode;
@@ -777,26 +859,13 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
      * Purpose: Handles shooting using the LMB
      */
     public void handleShooting() {
-        for (Ship enemy: this.enemies) {
-            if (enemy.dieFlag) continue;
-
-            if (enemy.shootTimer <= 0) {
-                projectiles.add(new Bullet(Alignment.ENEMY, Direction.DOWN,
-                        enemy.hitbox.getX() + enemy.hitbox.getWidth() / 4f,
-                        enemy.hitbox.getY() + enemy.hitbox.height - 5,
-                        playerLaserTexture,
-                        enemy.damage));
-                enemy.shootTimer = MathUtils.random(.7f, 1f);
-            }
-        }
-
 //        if (!player.hasWeapon()) { return; }
         //Used to make sure that the bullets don't start shooting when the user is trying to
         //click main menu
         float touchedX = Gdx.input.getX() * WORLD_WIDTH / Gdx.graphics.getWidth();
         if (Gdx.input.isButtonPressed(Input.Buttons.LEFT) && player.shootTimer <= 0 && touchedX >= LEFT_BOUND - 5 && touchedX <= RIGHT_BOUND) {
             projectiles.add(new Bullet(Alignment.PLAYER, Direction.UP,
-                    player.hitbox.x + player.hitbox.width*0.345F,
+                    player.hitbox.x + player.hitbox.width/2f - BULLET_TILE_SIZE/2f,
                     player.hitbox.y + player.hitbox.height*0.835f,
                     playerLaserTexture,
                     player.damage));
@@ -875,9 +944,9 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) {
             player.onDestroy(AddOnData.BATTERY);
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) {
-            player.onInstall(AddOnData.CHARGER);
+            //player.onInstall(AddOnData.CHARGER);
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_4)){
-            player.onDestroy(AddOnData.CHARGER);
+            //player.onDestroy(AddOnData.CHARGER);
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_5)) {
             player.onInstall(AddOnData.SHIELD);
         } else if (Gdx.input.isKeyJustPressed((Input.Keys.NUM_6))){
@@ -934,7 +1003,10 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         drawStats();
 
         //Draws moving objects
-        player.draw(batch);
+        for (AddOn addOn : addOns) {
+//            if(enemy.dieFlag) continue;
+            addOn.draw(batch);
+        }
         for (Ship enemy : enemies) {
 //            if(enemy.dieFlag) continue;
             enemy.draw(batch);
@@ -942,6 +1014,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         for (Bullet bullet : projectiles) {
             bullet.draw(batch);
         }
+        player.draw(batch);
         batch.end();
 
         //Draw open menu button
@@ -976,7 +1049,16 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
             drawDeveloperInfo();
         }
 
+        if(!startGame && !isPaused){drawStartGame();}
+
         batch.end();
+    }
+
+    private void drawStartGame() {
+        //batch.draw(popUpTexture, WORLD_WIDTH / 2f - 100, WORLD_HEIGHT / 2 - 25, 200, 50);
+        bitmapFont.getData().setScale(.4f);
+        centerText(bitmapFont, "Press Any Key To Start", WORLD_WIDTH/2f, WORLD_HEIGHT/2f);
+
     }
 
     /**
@@ -998,6 +1080,9 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
      */
     private void drawAddOnBar() {
         batch.draw(skillBarTexture, 50 - 47 / 2f, 10, 47, 200);
+        for(int i = 0; i < player.addOns.size ; i++){
+            batch.draw(addOnTexture[player.addOns.get(i).getId()][0], 51 - 10 / 2f, 164.5f - 15.2f * i, 10, 10);
+        }
         batch.draw(highlightTexture, 51 - 22 / 2f, 36 + 15.2f * itemSelected, 22, 22);
     }
 
@@ -1007,14 +1092,14 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
      * Purpose: Draws the player's health and energy bar if the player has those addOns equipped
      */
     private void drawStats() {
-        if (player.healthBarVisible) {
+        if (!player.healthBarVisible) {
             batch.draw(energyOffTexture, 10, WORLD_HEIGHT - 65, 80, 55);
         } else {
             batch.draw(energyOnTexture, 10, WORLD_HEIGHT - 65, 80, 55);
             batch.draw(healthTexture, 14, WORLD_HEIGHT - 44, (float) 73 * player.health / player.maxHealth, 7);
         }
 
-        if (player.energyBarVisible) {
+        if (!player.energyBarVisible) {
             batch.draw(energyOffTexture, 10, WORLD_HEIGHT - 115, 80, 55);
         } else {
             batch.draw(energyOnTexture, 10, WORLD_HEIGHT - 115, 80, 55);
@@ -1098,11 +1183,13 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         }
 //        String descriptions = selectedAddOn.description();
         batch.draw(infoBoardTexture, 390, 30, 80, 200);
-        bitmapFont.getData().setScale(.4f);
-        bitmapFont.setColor(Color.BLACK);
-        centerText(bitmapFont, name, WORLD_WIDTH - 50, 180);
-        batch.draw(addOnTexture[0][0], WORLD_WIDTH - 70, 130, 40, 20);
         bitmapFont.getData().setScale(.3f);
+        bitmapFont.setColor(Color.BLACK);
+        centerText(bitmapFont, addNewLine(name, 10), WORLD_WIDTH - 50, 180);
+        if(selectedAddOn != null) {
+            batch.draw(addOnTexture[player.addOns.get(8-itemSelected).getId()][0], WORLD_WIDTH - 70, 130, 40, 20);
+        }
+        bitmapFont.getData().setScale(.2f);
         centerText(bitmapFont, addNewLine(description, 12), WORLD_WIDTH - 50, 110);
     }
 

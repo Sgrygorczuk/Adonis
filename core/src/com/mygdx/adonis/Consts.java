@@ -11,13 +11,18 @@ public final class Consts {
     public static final int RIGHT_BOUND = 380;
     // TODO change to 32?
     // all entities are some multiple of these in size
-    public static final float TILE_WIDTH = 32;
-    public static final float TILE_HEIGHT = 32;
+    public static final float TILE_WIDTH = 16;
+    public static final float TILE_HEIGHT = 16;
 
-    public static final float ENEMY_SPAWN_TIME = 5;
     public static final int BULLET_DAMAGE = 10;
+    public static final float BULLET_TILE_SIZE = TILE_HEIGHT/2f;
+    public static final float BULLET_DRAW_OFFSET = 5;
 
-    public static final float PLAYER_SPEED = 5;
+    public static final float ADD_ON_TILE = TILE_HEIGHT/2f;
+
+    public static final float ADD_ON_SPEED = 6;
+    public static final float ENEMY_SPEED = 10;
+    public static final float PLAYER_SPEED = 12;
 
     public static final float DIAGONAL_SPEED = 0.707f;
     public static final float ADD_ON_GROWTH = 0.2f;

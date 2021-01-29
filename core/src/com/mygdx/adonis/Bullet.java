@@ -7,8 +7,8 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
-import static com.mygdx.adonis.Consts.TILE_HEIGHT;
-import static com.mygdx.adonis.Consts.TILE_WIDTH;
+import static com.mygdx.adonis.Consts.BULLET_DRAW_OFFSET;
+import static com.mygdx.adonis.Consts.BULLET_TILE_SIZE;
 
 public class Bullet {
     public Rectangle hitbox;
@@ -26,7 +26,7 @@ public class Bullet {
     public Bullet(Alignment alignment, Direction dir, float x, float y, TextureRegion[][] texture, int damage) {
         this.alignment = alignment;
         this.dir = dir;
-        this.hitbox = new Rectangle(x, y, TILE_WIDTH / 2f, TILE_HEIGHT / 2f);
+        this.hitbox = new Rectangle(x, y, BULLET_TILE_SIZE, BULLET_TILE_SIZE);
         this.velocity = new Vector2(0, 0);
         this.texture = texture;
         this.damage = damage;
@@ -76,7 +76,9 @@ public class Bullet {
 
     public void draw(SpriteBatch spriteBatch) {
         TextureRegion currentFrame = animation.getKeyFrame(animationTime);
-        spriteBatch.draw(currentFrame, hitbox.x, hitbox.y, hitbox.width, hitbox.height);
+        spriteBatch.draw(currentFrame, hitbox.x-BULLET_DRAW_OFFSET/2f,
+                hitbox.y-BULLET_DRAW_OFFSET/2f, hitbox.width+BULLET_DRAW_OFFSET
+                , hitbox.height+BULLET_DRAW_OFFSET);
     }
 
 }

@@ -56,6 +56,8 @@ public class MenuScreen extends ScreenAdapter{
     private Adonis adonis;
     private Planet planet;
 
+    private final float OFF_SET = 80;
+
     private boolean helpFlag;      //Tells if help menu is up or not
     private boolean creditsFlag;   //Tells if credits menu is up or not
     boolean letGo = true;
@@ -340,6 +342,7 @@ public class MenuScreen extends ScreenAdapter{
     */
     private void drawButtonText(){
         bitmapFont.getData().setScale(0.4f);
+        bitmapFont.setColor(Color.BLACK);
         for(int i = 0; i < 3; i ++) {
             centerText(bitmapFont, buttonText[i], 20 + 46.5f,
                     2 * WORLD_HEIGHT/3 + 15 - (31) * i);
@@ -356,7 +359,7 @@ public class MenuScreen extends ScreenAdapter{
         //Title
         bitmapFont.getData().setScale(0.5f);
         centerText(bitmapFont, "Credits", WORLD_WIDTH/2f, WORLD_HEIGHT-50);
-        bitmapFont.getData().setScale(0.32f);
+        bitmapFont.getData().setScale(0.25f);
 
         centerText(bitmapFont, "Programming", WORLD_WIDTH/2f, WORLD_HEIGHT - start);
         centerText(bitmapFont, "Sebastian Grygorczuk", WORLD_WIDTH/2f, WORLD_HEIGHT - (start + 10));
@@ -365,21 +368,31 @@ public class MenuScreen extends ScreenAdapter{
 
 
         centerText(bitmapFont, "Art", WORLD_WIDTH/2f, WORLD_HEIGHT - (start + 25));
-        centerText(bitmapFont, "All art is from ", WORLD_WIDTH/2f, WORLD_HEIGHT - (start + 35));
+        centerText(bitmapFont, addNewLine("All art was bought from Craftpix.net, the specific packets used are: " +
+                        "Space Game Background, Space Vertical 2D Background, Spaceship 2D Sprites, and Sci-Fi UI.", 70), WORLD_WIDTH/2f, WORLD_HEIGHT - (start + 45));
 
-        centerText(bitmapFont, "SFX and Music", WORLD_WIDTH/2f, WORLD_HEIGHT - (start + 50));
-        centerText(bitmapFont, "########", WORLD_WIDTH/2f - 120, WORLD_HEIGHT - (start + 60));
-        centerText(bitmapFont, "########", WORLD_WIDTH/2f, WORLD_HEIGHT - (start + 60));
-        centerText(bitmapFont, "########", WORLD_WIDTH/2f + 120, WORLD_HEIGHT - (start + 60));
-        centerText(bitmapFont, "########", WORLD_WIDTH/2f - 120, WORLD_HEIGHT - (start + 70));
-        centerText(bitmapFont, "########", WORLD_WIDTH/2f, WORLD_HEIGHT - (start + 70));
-        centerText(bitmapFont, "########", WORLD_WIDTH/2f + 120, WORLD_HEIGHT - (start + 70));
 
-        centerText(bitmapFont, "Font - ########", WORLD_WIDTH/2f, WORLD_HEIGHT - (start + 85));
-        centerText(bitmapFont, "########", WORLD_WIDTH/2f, WORLD_HEIGHT - (start + 95));
+        centerText(bitmapFont, "SFX and Music", WORLD_WIDTH/2f, WORLD_HEIGHT - (start + 65));
+        centerText(bitmapFont, addNewLine("All SFX and Music were gather from Freesound.com here are the users and the name of their piece.", 70), WORLD_WIDTH/2f, WORLD_HEIGHT - (start + 80));
+        bitmapFont.getData().setScale(0.20f);
+
+        centerText(bitmapFont, "DrMrSir - PowerDown Faster.wav", WORLD_WIDTH/2f - OFF_SET, WORLD_HEIGHT - (start + 100));
+        centerText(bitmapFont, "josepharaoh99 - Game Powerup", WORLD_WIDTH/2f- OFF_SET, WORLD_HEIGHT - (start + 107));
+        centerText(bitmapFont, "ChristianAnd - 25_Metal_chocando.wav", WORLD_WIDTH/2f- OFF_SET, WORLD_HEIGHT - (start + 114));
+
+        centerText(bitmapFont, "michael_grinnel - Laser shot.wav", WORLD_WIDTH/2f - OFF_SET, WORLD_HEIGHT - (start + 121));
+        centerText(bitmapFont, "MATRIXXX_ - Retro_Laser_Shot_04.wav", WORLD_WIDTH/2f- OFF_SET, WORLD_HEIGHT - (start + 128));
+        centerText(bitmapFont, "NightWolfCFM - Minotaur (Chase Music)", WORLD_WIDTH/2f- OFF_SET, WORLD_HEIGHT - (start + 135));
+
+        centerText(bitmapFont, "Xanco123 - Dark Ambient Music 3: Hunted", WORLD_WIDTH/2f + OFF_SET, WORLD_HEIGHT - (start + 100));
+        centerText(bitmapFont, "GameAudio - Button Spacey Confirm", WORLD_WIDTH/2f + OFF_SET, WORLD_HEIGHT - (start + 107));
+        centerText(bitmapFont, "GameAudio - Button Deny Spacey", WORLD_WIDTH/2f + OFF_SET, WORLD_HEIGHT - (start + 114));
+        centerText(bitmapFont, "JapanYoshiTheGamer - 8-bit Cymbal + Kick or Impact", WORLD_WIDTH/2f + OFF_SET, WORLD_HEIGHT - (start + 121));
+        centerText(bitmapFont, "kwahmah_02 - Pop!.wav", WORLD_WIDTH/2f + OFF_SET, WORLD_HEIGHT - (start + 128));
     }
 
-    /*
+
+    /**
     Input: BitmapFont for size and font of text, string the text, and x and y for position
     Output: Void
     Purpose: General purpose function that centers the text on the position
@@ -388,6 +401,27 @@ public class MenuScreen extends ScreenAdapter{
         GlyphLayout glyphLayout = new GlyphLayout();
         glyphLayout.setText(bitmapFont, string);
         bitmapFont.draw(batch, string,  x - glyphLayout.width/2, y + glyphLayout.height/2);
+    }
+
+    /**
+     * Input: The given string, length - how many chars do we go till we start a new line
+     * Output: Void
+     * Purpose: This function take a string and adds a new line whenever it reaches the length between it's starting position andlengtht,
+     * if start + length happens to occur on a non space char it goes back to the nearest space char
+     */
+    private String addNewLine(String str, int lineLength) {
+        int spaceFound;
+        int reminder = 0; //Used to push back the check to wherever the last " " was
+        for (int j = 0; lineLength * (j + 1) + j - reminder < str.length(); j++) {
+            //Finds the new position of where a " " occurs
+            spaceFound = str.lastIndexOf(" ", lineLength * (j + 1) + j - reminder);
+            //Adds in a new line if this is not the end of the string
+            if (str.length() >= spaceFound + 1) {
+                str = str.substring(0, spaceFound + 1) + "\n" + str.substring(spaceFound);
+                reminder = lineLength * (j + 1) + j - spaceFound;
+            }
+        }
+        return str;
     }
 
 
