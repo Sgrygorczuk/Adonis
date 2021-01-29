@@ -10,6 +10,7 @@ import com.badlogic.gdx.utils.Array;
 
 import static com.mygdx.adonis.Consts.ADD_ON_GROWTH;
 import static com.mygdx.adonis.Consts.BATTERY_SIZE;
+import static com.mygdx.adonis.Consts.BULLET_DAMAGE;
 import static com.mygdx.adonis.Consts.ENERGY_RECHARGE;
 import static com.mygdx.adonis.Consts.PLAYER_SPEED;
 import static com.mygdx.adonis.Consts.TILE_HEIGHT;
@@ -42,6 +43,7 @@ public abstract class Ship {
     protected Animation<TextureRegion> dieAnimation;
 
     //Current animation frame time
+    public int damage;
     protected float animationTime = 0;
     public boolean dieFlag = false;
 
@@ -59,6 +61,7 @@ public abstract class Ship {
         this.maxEnergy = 0;
         this.energy = 0;
         this.energyRecharge = 1;
+        this.damage = BULLET_DAMAGE;
 
         this.flySpriteSheet = flySpriteSheet;
         this.dieSpriteSheet = dieSpriteSheet;
@@ -143,7 +146,7 @@ public abstract class Ship {
     }
 
     public void onInstall(AddOnData addOn) {
-        if(this.addOns.size >= 8){
+        if(this.addOns.size >= 9){
             return;
         }
         this.addOns.add(addOn);
@@ -180,6 +183,7 @@ public abstract class Ship {
                 break;
             case WEAPON_BOOST:
                 // Upgrades the damage of weapons
+                damage *= 2;
                 break;
             case WEAPON_UPGRADE:
                 // Upgrades the hitboxes of weapons
@@ -229,6 +233,7 @@ public abstract class Ship {
         }
     }
 
+
     public void onDestroy(AddOnData addOn) {
 
         if (this.addOns.contains(addOn, true)) {
@@ -237,6 +242,10 @@ public abstract class Ship {
         } else {
             return;
         }
+        destroyedPart(addOn);
+    }
+
+    public void destroyedPart(AddOnData addOn){
         switch (addOn) {
             case HEALTH_BAR_GUI:
                 // Removes Health Bar GUI
@@ -264,6 +273,7 @@ public abstract class Ship {
                 break;
             case WEAPON_BOOST:
                 // Removes damage upgrade
+                damage /= 2;
                 break;
             case WEAPON_UPGRADE:
                 // removes hitbox upgrade
@@ -280,7 +290,7 @@ public abstract class Ship {
         }
     }
 
-    private void updateShipSpecs(){
+    public void updateShipSpecs(){
         this.hitbox.width = TILE_WIDTH*(1+(ADD_ON_GROWTH*(1+this.addOns.size)));
         this.hitbox.height = TILE_HEIGHT*(1+(ADD_ON_GROWTH*(1+this.addOns.size)));
 

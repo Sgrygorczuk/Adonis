@@ -15,6 +15,7 @@ public final class Consts {
     public static final float TILE_HEIGHT = 32;
 
     public static final float ENEMY_SPAWN_TIME = 5;
+    public static final int BULLET_DAMAGE = 10;
 
     public static final float PLAYER_SPEED = 5;
 
@@ -22,5 +23,5 @@ public final class Consts {
     public static final float ADD_ON_GROWTH = 0.2f;
 
     public static final int BATTERY_SIZE = 1000;
-    public static final int ENERGY_RECHARGE = 5;
+    public static final int ENERGY_RECHARGE = 3;
 }

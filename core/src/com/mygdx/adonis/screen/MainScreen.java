@@ -42,6 +42,7 @@ import com.mygdx.adonis.EnemyType;
 import com.mygdx.adonis.Player;
 import com.mygdx.adonis.Ship;
 
+import static com.mygdx.adonis.Consts.BULLET_DAMAGE;
 import static com.mygdx.adonis.Consts.LEFT_BOUND;
 import static com.mygdx.adonis.Consts.RIGHT_BOUND;
 import static com.mygdx.adonis.Consts.WORLD_HEIGHT;
@@ -782,12 +783,13 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
                 projectiles.add(new Bullet(Alignment.ENEMY, Direction.DOWN,
                         enemy.hitbox.getX() + enemy.hitbox.getWidth() / 4f,
                         enemy.hitbox.getY() + enemy.hitbox.height - 5,
-                        playerLaserTexture));
+                        playerLaserTexture,
+                        enemy.damage));
                 enemy.shootTimer = MathUtils.random(.7f, 1f);
             }
         }
 
-        if (!player.hasWeapon()) { return; }
+//        if (!player.hasWeapon()) { return; }
         //Used to make sure that the bullets don't start shooting when the user is trying to
         //click main menu
         float touchedX = Gdx.input.getX() * WORLD_WIDTH / Gdx.graphics.getWidth();
@@ -795,7 +797,8 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
             projectiles.add(new Bullet(Alignment.PLAYER, Direction.UP,
                     player.hitbox.x + player.hitbox.width*0.345F,
                     player.hitbox.y + player.hitbox.height*0.835f,
-                    playerLaserTexture));
+                    playerLaserTexture,
+                    player.damage));
             player.shootTimer = player.shootLag;
             playPlayerShoot();
         }
@@ -958,6 +961,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
             bitmapFont.getData().setScale(.4f);
             centerText(bitmapFont, "Back", WORLD_WIDTH / 2f, 103);
         }
+
         if (!helpFlag) {
             drawMenuText();
         }

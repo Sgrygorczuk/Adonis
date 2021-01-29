@@ -23,13 +23,13 @@ public class Bullet {
 
     public Alignment alignment;
 
-    public Bullet(Alignment alignment, Direction dir, float x, float y, TextureRegion[][] texture) {
+    public Bullet(Alignment alignment, Direction dir, float x, float y, TextureRegion[][] texture, int damage) {
         this.alignment = alignment;
         this.dir = dir;
         this.hitbox = new Rectangle(x, y, TILE_WIDTH / 2f, TILE_HEIGHT / 2f);
         this.velocity = new Vector2(0, 0);
         this.texture = texture;
-        this.damage = 10;
+        this.damage = damage;
         setUpAnimation();
     }
 

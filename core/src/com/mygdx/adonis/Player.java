@@ -15,6 +15,7 @@ public class Player extends Ship {
     public Player(TextureRegion[][] textureFly, TextureRegion[][] textureDie, float initX, float initY) {
         super(textureFly, textureDie, initX, initY, Alignment.PLAYER);
         this.shipSpeed = PLAYER_SPEED;
+
     }
 
     @Override
@@ -42,8 +43,13 @@ public class Player extends Ship {
     }
 
     public void ejectSelected(int ind) {
-        if(ind <= addOns.size) return;
+        if(ind >= addOns.size) return;
+
+        AddOnData destroyed = addOns.get(ind);
+        System.out.println("Destroyed "+destroyed.getName()+" at index "+ind);
         addOns.removeIndex(ind);
+        destroyedPart(destroyed);
+        updateShipSpecs();
 //        super.addOns.removeValue(selectedAddOn, true);
     }
 }

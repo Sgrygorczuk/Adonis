@@ -2,6 +2,7 @@ package com.mygdx.adonis;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
+import static com.mygdx.adonis.Consts.BULLET_DAMAGE;
 import static com.mygdx.adonis.Consts.TILE_HEIGHT;
 import static com.mygdx.adonis.Direction.DOWN;
 
@@ -12,6 +13,8 @@ public class DummyEnemy extends Ship {
         this.shipSpeed = 10;
         this.velocity.y = 3 * TILE_HEIGHT;
         this.dir = DOWN;
+        this.health = 40;
+        this.maxHealth = 40;
     }
 
     @Override

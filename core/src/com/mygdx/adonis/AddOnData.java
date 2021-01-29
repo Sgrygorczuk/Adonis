@@ -4,7 +4,7 @@ package com.mygdx.adonis;
 public enum AddOnData {
     UNKNOWN(0, "UNKNOWN","UNKNOWN", false),
     // Weapons
-    GUN(1, "GUN", "Shoots bullets",true),
+    GUN(1, "GUN", "Extra Gun",true),
     LASER_GUN(2, "LASER_GUN", "Shoots laser", true), // requires energy
     MISSILE_LAUNCHER(3, "MISSILE_LAUNCHER","Shoots missiles", true), // requires missile holder
     // Upgrades
