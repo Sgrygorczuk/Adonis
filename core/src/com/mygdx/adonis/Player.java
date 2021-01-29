@@ -51,7 +51,7 @@ public class Player extends Ship {
         if(ind >= addOns.size) return false;
 
         AddOnData destroyed = addOns.get(ind);
-        System.out.println("Destroyed "+destroyed.getObjectName()+" at index "+ind);
+//        System.out.println("Destroyed "+destroyed.getObjectName()+" at index "+ind);
         addOns.removeIndex(ind);
         destroyedPart(destroyed);
         updateShipSpecs();

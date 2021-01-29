@@ -29,4 +29,5 @@ public final class Consts {
 
     public static final int BATTERY_SIZE = 1000;
     public static final int ENERGY_RECHARGE = 3;
+    public static final float ENERGY_BURN_TIME = 3f;
 }

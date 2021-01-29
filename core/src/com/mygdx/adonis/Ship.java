@@ -9,9 +9,11 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
 import static com.mygdx.adonis.Alignment.ENEMY;
+import static com.mygdx.adonis.Alignment.PLAYER;
 import static com.mygdx.adonis.Consts.ADD_ON_GROWTH;
 import static com.mygdx.adonis.Consts.BATTERY_SIZE;
 import static com.mygdx.adonis.Consts.BULLET_DAMAGE;
+import static com.mygdx.adonis.Consts.ENERGY_BURN_TIME;
 import static com.mygdx.adonis.Consts.ENERGY_RECHARGE;
 import static com.mygdx.adonis.Consts.PLAYER_SPEED;
 import static com.mygdx.adonis.Consts.TILE_HEIGHT;
@@ -25,12 +27,15 @@ public abstract class Ship {
     public int maxHealth;
     public int health;
     public boolean healthBarVisible = false;
+    public int healthBarHeld = 0;
 
     public int maxEnergy;
     public int energy;
     public int energyRecharge;
     public boolean energyBarVisible = false;
-
+    public int energyBarHeld = 0; // TODO: Remove once we make it unique
+    public float energyBurn = 0f;
+    public boolean hasShield = false;
     public Direction dir;
 
     protected Array<Bullet> bulletsFired;
@@ -102,13 +107,20 @@ public abstract class Ship {
 
     // collision isn't as simple as checking a single hitbox since each ship has multiple addons
     public boolean isColliding(Rectangle other) {
-        // todo addons
         return this.hitbox.overlaps(other);
     }
 
     public void takeDamage(int amt) {
         if(!invincibilityFlag) {
-            this.health -= amt;
+            if(hasShield && energy > 0){
+                this.energy -= amt*10;
+                if(energy < 0){
+                    energyBurn = ENERGY_BURN_TIME;
+                }
+            } else {
+                this.health -= amt;
+                if(this.align == PLAYER) setInvincibilityFlag();
+            }
             if (health <= 0 && !dieFlag) {
                 shootTimer = 999f;
                 damage = 0;
@@ -140,7 +152,6 @@ public abstract class Ship {
     }
 
 
-    // TODO change velocity depending on game stuff
     public void update(float delta) {
         animationTime += delta;
 
@@ -150,11 +161,15 @@ public abstract class Ship {
             if (this.health > this.maxHealth) {
                 this.health = this.maxHealth;
             }
-            if (this.maxEnergy > 0 && this.energy < this.maxEnergy) {
-                this.energy+=this.energyRecharge;
-            }
-            if (this.energy > this.maxEnergy) {
-                this.energy = this.maxEnergy;
+            if(this.energyBurn > 0f){
+                energyBurn -= delta;
+            } else{
+                if (this.maxEnergy > 0 && this.energy < this.maxEnergy) {
+                    this.energy+=this.energyRecharge;
+                }
+                if (this.energy > this.maxEnergy) {
+                    this.energy = this.maxEnergy;
+                }
             }
 
             velocity.x = this.dir.getX();
@@ -183,16 +198,17 @@ public abstract class Ship {
 
         this.updateShipSpecs();
 
-        System.out.println(addOn.name());
-        // TODO: install the addons - Paul
+//        System.out.println(addOn.name());
         switch (addOn) {
             case HEALTH_BAR_GUI:
                 // Allows ship to see Health Bar
                 healthBarVisible = true;
+                healthBarHeld += 1;
                 break;
             case ENERGY_BAR_GUI:
                 // Allows ship to see Energy Bar
                 energyBarVisible = true;
+                energyBarHeld += 1;
                 break;
             //case HEALING_STATION:
                 // Allows ship to hold and use health packs they pick up
@@ -203,14 +219,15 @@ public abstract class Ship {
             case SHIELD:
                 // Has a shield in a certain direction of installation
                 // Shield either consumes energy while on or when it gets hit
+                hasShield = true;
                 break;
             case BATTERY:
                 // Holds energy and lets you use weapons and upgrades that require it
                 this.maxEnergy += BATTERY_SIZE;
                 break;
-            //case CHARGER:
-                //this.energyRecharge *= ENERGY_RECHARGE;
-                //break;
+            case CHARGER:
+                this.energyRecharge *= ENERGY_RECHARGE;
+                break;
             case WEAPON_BOOST:
                 // Upgrades the damage of weapons
                 damage *= 2;
@@ -279,11 +296,13 @@ public abstract class Ship {
         switch (addOn) {
             case HEALTH_BAR_GUI:
                 // Removes Health Bar GUI
-                healthBarVisible = false;
+                healthBarHeld -= 1;
+                if (healthBarHeld < 1) healthBarVisible = false;
                 break;
             case ENERGY_BAR_GUI:
                 // Removes Energy Bar GUI
-                energyBarVisible = false;
+                energyBarHeld -= 1;
+                if (energyBarHeld < 1) energyBarVisible = false;
                 break;
             //case HEALING_STATION:
                 // Decrease max health kit capacity
@@ -293,14 +312,15 @@ public abstract class Ship {
                // break;
             case SHIELD:
                 // remove use of shield
+                hasShield = false;
                 break;
             case BATTERY:
                 // Removes their max energy
                 this.maxEnergy -= BATTERY_SIZE;
                 break;
-            //case CHARGER:
-                //this.energyRecharge /= ENERGY_RECHARGE;
-                //break;
+            case CHARGER:
+                this.energyRecharge /= ENERGY_RECHARGE;
+                break;
             case WEAPON_BOOST:
                 // Removes damage upgrade
                 damage /= 2;
@@ -326,7 +346,6 @@ public abstract class Ship {
 
         this.shipSpeed = PLAYER_SPEED + ((-2)*(float)(Math.log(0.5+this.addOns.size)));
 
-        System.out.println(this.hitbox.width+", "+this.hitbox.height+"\t"+this.shipSpeed);
     }
 
     public boolean hasAddOn(AddOnData addOn) {
@@ -353,7 +372,6 @@ public abstract class Ship {
         while (i < this.bulletsFired.size) {
             Bullet fired = this.bulletsFired.get(i);
             fired.update(delta);
-            System.out.println("Bullet " + i + ": " + fired.hitbox.x + ", " + fired.hitbox.y);
             if (fired.hitbox.y > 300 || fired.hitbox.y < 0) {
                 fired.dispose();
                 this.bulletsFired.removeIndex(i);

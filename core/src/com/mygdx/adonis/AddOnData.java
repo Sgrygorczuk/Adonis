@@ -4,7 +4,7 @@ package com.mygdx.adonis;
 public enum AddOnData {
     UNKNOWN(5, "UNKNOWN", "Unknown", "UNKNOWN", false),
     // Weapons
-    //GUN(1, "GUN", "Extra Gun",true),
+    //GUN(1, "GUN", "Faster Fire Rate",true),
     //LASER_GUN(2, "LASER_GUN", "Shoots laser", true), // requires energy
     //MISSILE_LAUNCHER(3, "MISSILE_LAUNCHER","Shoots missiles", true), // requires missile holder
     // Upgrades
@@ -14,7 +14,7 @@ public enum AddOnData {
     //ENERGY_STATION(53, "ENERGY_STATION", "Holds Energy Packs", false), // Holds energy cells that you can collect
     SHIELD(2, "SHIELD", "Shield", "Blocks Bullets with Energy", false), // battery powered (uses energy on hit or while active)
     BATTERY(3, "BATTERY", "Battery" , "Holds Energy", false), // helps you use energy weapons/upgrades
-    //CHARGER(56, "CHARGER", "Increased Energy Rate",false), // charges battery faster
+    CHARGER(5, "CHARGER", "Charger","Increased Energy Rate",false), // charges battery faster
     WEAPON_BOOST(4, "WEAPON_BOOST", "Weapon Boost", "Increase Weapon Damage", false); // upgrades weapon damaage
     //WEAPON_UPGRADE(58, "WEAPON_UPGRADE", "Inrease Weapon Hitbox", false), // upgrades hitbox of weapons
     //MISSILE_HOLDER(59, "MISSILE_HOLDER", "Holds Missile Ammo", false), // Holds missile (needed for Missile Launcher)

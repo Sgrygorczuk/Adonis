@@ -125,6 +125,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
     private boolean isGameEnded = false;            //Tells us game has been lost
     private float sfxVolume = 1f;               //Current sfx volume
     private boolean helpFlag = false;           //Tells us if help flag is on or off
+    private int score = 0;
     boolean letGo = true;
 
     /*
@@ -780,9 +781,9 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
                 // player take damage
                 hit = true;
                 player.takeDamage(bullet.damage);
-                player.setInvincibilityFlag();
                 playHit();
                 if (player.health <= 0) {
+                    this.score += 100;
                     playExplosion();
                     player.health = 0;
                     isGameEnded = true;
@@ -837,7 +838,6 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         handleMovement();           //Checks user movement input
         handleScrolling();          //Checks user scroll input
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
-            System.out.println(8-itemSelected);
             boolean soundCheck = player.ejectSelected(8-itemSelected);
             if(soundCheck){playPowerDown();}
         }
@@ -942,20 +942,20 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) {
             player.onInstall(AddOnData.BATTERY);
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) {
-            player.onDestroy(AddOnData.BATTERY);
+            player.onInstall(AddOnData.CHARGER);
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) {
-            //player.onInstall(AddOnData.CHARGER);
-        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_4)){
-            //player.onDestroy(AddOnData.CHARGER);
-        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_5)) {
             player.onInstall(AddOnData.SHIELD);
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_4)){
+            player.onInstall(AddOnData.WEAPON_BOOST);
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_5)) {
+            player.onInstall(AddOnData.HEALTH_BAR_GUI);
         } else if (Gdx.input.isKeyJustPressed((Input.Keys.NUM_6))){
-            player.onDestroy(AddOnData.SHIELD);
-        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_9)) {
+            player.onInstall(AddOnData.ENERGY_BAR_GUI);
+        } /*else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_9)) {
             player.onDestroy(AddOnData.WEAPON_BOOST);
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_0)) {
             player.onInstall(AddOnData.WEAPON_BOOST);
-        }
+        }*/
     }
 
     /**
@@ -1001,6 +1001,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         drawAddOnInfo();
         drawAddOnBar();
         drawStats();
+        drawScore();
 
         //Draws moving objects
         for (AddOn addOn : addOns) {
@@ -1064,6 +1065,16 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
     /**
      * Input: Void
      * Output: Void
+     * Purpose: Draw the scoreboard
+     */
+    private void drawScore(){
+        bitmapFont.setColor(Color.WHITE);
+        centerText(bitmapFont, "Score:" + this.score, 450, 260);
+    }
+
+    /**
+     * Input: Void
+     * Output: Void
      * Purpose: Draws the tiled map
      */
     private void drawTiledMap() {
@@ -1081,6 +1092,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
     private void drawAddOnBar() {
         batch.draw(skillBarTexture, 50 - 47 / 2f, 10, 47, 200);
         for(int i = 0; i < player.addOns.size ; i++){
+            // TODO make it a dictionary so we can use NAME rather than id in the future
             batch.draw(addOnTexture[player.addOns.get(i).getId()][0], 51 - 10 / 2f, 164.5f - 15.2f * i, 10, 10);
         }
         batch.draw(highlightTexture, 51 - 22 / 2f, 36 + 15.2f * itemSelected, 22, 22);
