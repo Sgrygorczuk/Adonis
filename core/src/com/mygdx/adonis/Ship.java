@@ -33,9 +33,11 @@ public abstract class Ship {
     public int energy;
     public int energyRecharge;
     public boolean energyBarVisible = false;
+
     public int energyBarHeld = 0; // TODO: Remove once we make it unique
     public float energyBurn = 0f;
     public boolean hasShield = false;
+
     public Direction dir;
 
     protected Array<Bullet> bulletsFired;
@@ -51,7 +53,7 @@ public abstract class Ship {
     //Current animation frame time
     public int damage;
     private boolean invincibilityFlag;
-    private boolean flashing = false;
+    protected boolean flashing = false;
     protected float animationTime = 0;
     public boolean dieFlag = false;
 
@@ -107,25 +109,20 @@ public abstract class Ship {
 
     // collision isn't as simple as checking a single hitbox since each ship has multiple addons
     public boolean isColliding(Rectangle other) {
+        // todo addons
         return this.hitbox.overlaps(other);
     }
 
     public void takeDamage(int amt) {
         if(!invincibilityFlag) {
-            if(hasShield && energy > 0){
-                this.energy -= amt*10;
+            if(hasShield && energy-amt*20 > 0){
+                this.energy -= amt*20;
                 if(energy < 0){
                     energyBurn = ENERGY_BURN_TIME;
                 }
             } else {
                 this.health -= amt;
                 if(this.align == PLAYER) setInvincibilityFlag();
-            }
-            if (health <= 0 && !dieFlag) {
-                shootTimer = 999f;
-                damage = 0;
-                animationTime = 0;
-                dieFlag = true;
             }
         }
     }
@@ -152,6 +149,7 @@ public abstract class Ship {
     }
 
 
+    // TODO change velocity depending on game stuff
     public void update(float delta) {
         animationTime += delta;
 
@@ -163,9 +161,9 @@ public abstract class Ship {
             }
             if(this.energyBurn > 0f){
                 energyBurn -= delta;
-            } else{
+            } else {
                 if (this.maxEnergy > 0 && this.energy < this.maxEnergy) {
-                    this.energy+=this.energyRecharge;
+                    this.energy += this.energyRecharge;
                 }
                 if (this.energy > this.maxEnergy) {
                     this.energy = this.maxEnergy;
@@ -198,7 +196,8 @@ public abstract class Ship {
 
         this.updateShipSpecs();
 
-//        System.out.println(addOn.name());
+        System.out.println(addOn.name());
+        // TODO: install the addons - Paul
         switch (addOn) {
             case HEALTH_BAR_GUI:
                 // Allows ship to see Health Bar
@@ -311,7 +310,6 @@ public abstract class Ship {
                 // Decrease max energy kit capacity
                // break;
             case SHIELD:
-                // remove use of shield
                 hasShield = false;
                 break;
             case BATTERY:
@@ -345,7 +343,6 @@ public abstract class Ship {
         this.hitbox.height = TILE_HEIGHT*(1+(ADD_ON_GROWTH*(1+this.addOns.size)));
 
         this.shipSpeed = PLAYER_SPEED + ((-2)*(float)(Math.log(0.5+this.addOns.size)));
-
     }
 
     public boolean hasAddOn(AddOnData addOn) {

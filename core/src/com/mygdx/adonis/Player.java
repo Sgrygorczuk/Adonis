@@ -1,5 +1,6 @@
 package com.mygdx.adonis;
 
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
@@ -11,9 +12,12 @@ import static com.mygdx.adonis.Consts.WORLD_HEIGHT;
 public class Player extends Ship {
 
     public AddOn selectedAddOn;
+    private Texture shield;
 
-    public Player(TextureRegion[][] textureFly, TextureRegion[][] textureDie, float initX, float initY) {
+    public Player(TextureRegion[][] textureFly, TextureRegion[][] textureDie, Texture shield,
+                  float initX, float initY) {
         super(textureFly, textureDie, initX, initY, Alignment.PLAYER);
+        this.shield = shield;
         this.shipSpeed = PLAYER_SPEED;
     }
 
@@ -43,15 +47,15 @@ public class Player extends Ship {
 
     @Override
     public void draw(SpriteBatch spriteBatch) {
-
         super.draw(spriteBatch);
+        if(hasShield && !flashing){spriteBatch.draw(shield, hitbox.x, hitbox.y, hitbox.width, hitbox.height);}
     }
 
     public boolean ejectSelected(int ind) {
         if(ind >= addOns.size) return false;
 
         AddOnData destroyed = addOns.get(ind);
-//        System.out.println("Destroyed "+destroyed.getObjectName()+" at index "+ind);
+        System.out.println("Destroyed "+destroyed.getObjectName()+" at index "+ind);
         addOns.removeIndex(ind);
         destroyedPart(destroyed);
         updateShipSpecs();

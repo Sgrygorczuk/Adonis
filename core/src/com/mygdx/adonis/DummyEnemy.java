@@ -15,8 +15,8 @@ public class DummyEnemy extends Ship {
         this.shipSpeed = ENEMY_SPEED;
         this.velocity.y = TILE_HEIGHT;
         this.dir = DOWN;
-        this.health = 40;
-        this.maxHealth = 40;
+        this.health = 20;
+        this.maxHealth = 20;
     }
 
     @Override

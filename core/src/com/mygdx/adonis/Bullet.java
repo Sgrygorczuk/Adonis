@@ -51,7 +51,7 @@ public class Bullet {
         }
 
         hitbox.x = hitbox.getX() + dir.getX();
-        hitbox.y = hitbox.getY() + dir.getY() * 10;
+        hitbox.y = hitbox.getY() + dir.getY() * 3;
 
         animationTime += delta;
     }

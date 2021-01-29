@@ -93,6 +93,8 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
     private Texture dividerTexture;
     private Texture healthTexture;
     private Texture energyTexture;
+    private Texture scoreBoardTexture;
+    private Texture shieldTexture;
 
     private TextureRegion[][] playerFlyTexture;
     private TextureRegion[][] playerDieTexture;
@@ -125,8 +127,9 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
     private boolean isGameEnded = false;            //Tells us game has been lost
     private float sfxVolume = 1f;               //Current sfx volume
     private boolean helpFlag = false;           //Tells us if help flag is on or off
-    private int score = 0;
     boolean letGo = true;
+    String endString = "";
+    private int score = 0;
 
     /*
     Input: SpaceHops
@@ -200,6 +203,8 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         dividerTexture = new Texture(Gdx.files.internal("UI/Divider.png"));
         healthTexture = new Texture(Gdx.files.internal("UI/Health.png"));
         energyTexture = new Texture(Gdx.files.internal("UI/Energy.png"));
+        scoreBoardTexture = new Texture(Gdx.files.internal("UI/PointPanel.png"));
+        shieldTexture = new Texture(Gdx.files.internal("Sprites/Shield.png"));
 
         //Texture Regions
         Texture playerFlyTexturePath = new Texture(Gdx.files.internal("Sprites/PlayerSpriteSheetFly.png"));
@@ -411,12 +416,18 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
             public void tap(InputEvent event, float x, float y, int count, int button) {
                 super.tap(event, x, y, count, button);
                 playButtonSFX();
-                helpFlag = false;
-                //Turn on all buttons but turn off this one
-                for (ImageButton imageButton : menuButtons) {
-                    imageButton.setVisible(true);
+                if(helpFlag){
+                    helpFlag = false;
+                    //Turn on all buttons but turn off this one
+                    for (ImageButton imageButton : menuButtons) {
+                        imageButton.setVisible(true);
+                    }
+                    menuButtons[NUM_BUTTONS].setVisible(false);
                 }
-                menuButtons[NUM_BUTTONS].setVisible(false);
+                if(isGameEnded){
+                    music.stop();
+                    adonis.setScreen(new MenuScreen(adonis));
+                }
             }
         });
     }
@@ -458,7 +469,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         MapLayer mapLayer = tiledMap.getLayers().get("Player");
         //For each instance of that in the layered map create a skull collectible at it's position
         for (MapObject mapObject : mapLayer.getObjects()) {
-            player = new Player(playerFlyTexture, playerDieTexture,
+            player = new Player(playerFlyTexture, playerDieTexture, shieldTexture,
                     mapObject.getProperties().get("x", Float.class),
                     mapObject.getProperties().get("y", Float.class));
         }
@@ -596,7 +607,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
      */
     @Override
     public void render(float delta) {
-        if (!isPaused && startGame) {
+        if (!isPaused && startGame && !isGameEnded) {
             update(delta);
         }
         else{
@@ -690,6 +701,9 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         updateAddOns(delta);        //Updates addOns
         updateCollision(delta);     //Check for collision between ships and bullets
         updateCamera(delta);        //Update Tiled camera placement and menu stage size.
+
+        if(enemies.size == 0){ endGame(0); }
+        else if (player.health <= 0 && player.getBlowUpFlag()) { endGame(1); }
     }
 
     /**
@@ -700,14 +714,6 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
      */
     public void updatePlayer(float delta) {
         player.update(delta);
-        if (player.health == 0) {
-            endGame();
-            if (isGameEnded) {
-                music.stop();
-                adonis.setScreen(new MenuScreen(adonis));
-                //TODO make pop for user to restart or quit to main menu
-            }
-        }
     }
 
     public void updateAddOns(float delta){
@@ -733,6 +739,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
                 spawnAddOn(MathUtils.random(0, 4), enemy.hitbox.x + enemy.hitbox.getWidth()/2f - ADD_ON_TILE/2f,
                         enemy.hitbox.y + enemy.hitbox.height/2f - ADD_ON_TILE/2f);
                 enemies.removeValue(enemy, true);
+                this.score += 100;
             }
 
             if (enemy.dieFlag) continue;
@@ -781,12 +788,11 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
                 // player take damage
                 hit = true;
                 player.takeDamage(bullet.damage);
+                player.setInvincibilityFlag();
                 playHit();
                 if (player.health <= 0) {
-                    this.score += 100;
                     playExplosion();
                     player.health = 0;
-                    isGameEnded = true;
                 }
             }
 
@@ -838,6 +844,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         handleMovement();           //Checks user movement input
         handleScrolling();          //Checks user scroll input
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
+            System.out.println(8-itemSelected);
             boolean soundCheck = player.ejectSelected(8-itemSelected);
             if(soundCheck){playPowerDown();}
         }
@@ -942,20 +949,24 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) {
             player.onInstall(AddOnData.BATTERY);
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) {
-            player.onInstall(AddOnData.CHARGER);
+            player.onDestroy(AddOnData.BATTERY);
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) {
-            player.onInstall(AddOnData.SHIELD);
+            //player.onInstall(AddOnData.CHARGER);
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_4)){
-            player.onInstall(AddOnData.WEAPON_BOOST);
+            //player.onDestroy(AddOnData.CHARGER);
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_5)) {
-            player.onInstall(AddOnData.HEALTH_BAR_GUI);
+            player.onInstall(AddOnData.SHIELD);
         } else if (Gdx.input.isKeyJustPressed((Input.Keys.NUM_6))){
-            player.onInstall(AddOnData.ENERGY_BAR_GUI);
-        } /*else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_9)) {
+            player.onDestroy(AddOnData.SHIELD);
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_9)) {
             player.onDestroy(AddOnData.WEAPON_BOOST);
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_0)) {
             player.onInstall(AddOnData.WEAPON_BOOST);
-        }*/
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
+           enemies.clear();
+        }else if (Gdx.input.isKeyJustPressed(Input.Keys.O)) {
+            player.health = 10;
+        }
     }
 
     /**
@@ -963,7 +974,23 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
      * Output: Void
      * Purpose: Puts the game in end game state
      */
-    private void endGame() {
+    private void endGame(int endType) {
+        System.out.println("Hello");
+        menuButtons[NUM_BUTTONS].setVisible(true);
+        switch (endType){
+            case 0:{
+                //TODO add score
+                endString = addNewLine("You have won! You're score is: " + score, 15);
+                break;
+            }
+            case 1:{
+                endString =  addNewLine("You are lost, your parts are now galactic trash...", 15);
+                break;
+            }
+            default:{
+                endString = "";
+            }
+        }
         isGameEnded = true;
     }
 
@@ -999,9 +1026,9 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         batch.draw(dividerTexture, 92, 0, 4, WORLD_HEIGHT);
         batch.draw(dividerTexture, 380, 0, 4, WORLD_HEIGHT);
         drawAddOnInfo();
+        drawScore();
         drawAddOnBar();
         drawStats();
-        drawScore();
 
         //Draws moving objects
         for (AddOn addOn : addOns) {
@@ -1051,7 +1078,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         }
 
         if(!startGame && !isPaused){drawStartGame();}
-
+        if(isGameEnded){drawEndScreen();}
         batch.end();
     }
 
@@ -1060,16 +1087,6 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         bitmapFont.getData().setScale(.4f);
         centerText(bitmapFont, "Press Any Key To Start", WORLD_WIDTH/2f, WORLD_HEIGHT/2f);
 
-    }
-
-    /**
-     * Input: Void
-     * Output: Void
-     * Purpose: Draw the scoreboard
-     */
-    private void drawScore(){
-        bitmapFont.setColor(Color.WHITE);
-        centerText(bitmapFont, "Score:" + this.score, 450, 260);
     }
 
     /**
@@ -1092,7 +1109,6 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
     private void drawAddOnBar() {
         batch.draw(skillBarTexture, 50 - 47 / 2f, 10, 47, 200);
         for(int i = 0; i < player.addOns.size ; i++){
-            // TODO make it a dictionary so we can use NAME rather than id in the future
             batch.draw(addOnTexture[player.addOns.get(i).getId()][0], 51 - 10 / 2f, 164.5f - 15.2f * i, 10, 10);
         }
         batch.draw(highlightTexture, 51 - 22 / 2f, 36 + 15.2f * itemSelected, 22, 22);
@@ -1183,6 +1199,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
      * Purpose: Draws the addOn information for currently selected addOn.
      */
     private void drawAddOnInfo() {
+        float startPoint  = 230;
         AddOnData selectedAddOn = player.getAddOnAt(8-itemSelected);
         String name;
         String description;
@@ -1194,15 +1211,30 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
             description = selectedAddOn.getDescription();
         }
 //        String descriptions = selectedAddOn.description();
-        batch.draw(infoBoardTexture, 390, 30, 80, 200);
+        batch.draw(infoBoardTexture, 390, 60, 80, 200);
         bitmapFont.getData().setScale(.3f);
         bitmapFont.setColor(Color.BLACK);
-        centerText(bitmapFont, addNewLine(name, 10), WORLD_WIDTH - 50, 180);
+        centerText(bitmapFont, addNewLine(name, 10), WORLD_WIDTH - 50, startPoint-30);
         if(selectedAddOn != null) {
-            batch.draw(addOnTexture[player.addOns.get(8-itemSelected).getId()][0], WORLD_WIDTH - 70, 130, 40, 20);
+            batch.draw(addOnTexture[player.addOns.get(8-itemSelected).getId()][0], WORLD_WIDTH - 70, startPoint-80, 40, 20);
         }
         bitmapFont.getData().setScale(.2f);
-        centerText(bitmapFont, addNewLine(description, 12), WORLD_WIDTH - 50, 110);
+        centerText(bitmapFont, addNewLine(description, 12), WORLD_WIDTH - 50, startPoint-100);
+    }
+
+    private void drawScore(){
+        batch.draw(scoreBoardTexture, 390, 20, 80, 20);
+        bitmapFont.getData().setScale(.2f);
+        centerText(bitmapFont, score + "", WORLD_WIDTH - 50, 40);
+    }
+
+    private void drawEndScreen(){
+        bitmapFont.setColor(Color.BLACK);
+        bitmapFont.getData().setScale(.5f);
+        centerText(bitmapFont, endString, WORLD_WIDTH/2f, WORLD_HEIGHT/2f + 20);
+
+        bitmapFont.getData().setScale(.4f);
+        centerText(bitmapFont, "Main Menu", WORLD_WIDTH / 2f, 103);
     }
 
     /**

@@ -21,7 +21,7 @@ public final class Consts {
     public static final float ADD_ON_TILE = TILE_HEIGHT/2f;
 
     public static final float ADD_ON_SPEED = 6;
-    public static final float ENEMY_SPEED = 10;
+    public static final float ENEMY_SPEED = 7;
     public static final float PLAYER_SPEED = 12;
 
     public static final float DIAGONAL_SPEED = 0.707f;
@@ -30,4 +30,5 @@ public final class Consts {
     public static final int BATTERY_SIZE = 1000;
     public static final int ENERGY_RECHARGE = 3;
     public static final float ENERGY_BURN_TIME = 3f;
+
 }
