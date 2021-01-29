@@ -121,7 +121,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
 
     //Flags
     private int itemSelected = 8;
-    private boolean developerMode = true;      //Developer mode shows hit boxes and phone data
+    private boolean developerMode = false;      //Developer mode shows hit boxes and phone data
     private boolean startGame = false;
     private boolean isPaused = false;         //Stops the game from updating
     private boolean isGameEnded = false;            //Tells us game has been lost
@@ -850,13 +850,9 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         }
 
         //Allows user to turn on dev mode
-        if (Gdx.input.isKeyJustPressed(Input.Keys.TAB)) {
-            developerMode = !developerMode;
-        }
+        //if (Gdx.input.isKeyJustPressed(Input.Keys.TAB)) { developerMode = !developerMode; }
         //Give Dev actions
-        if (developerMode) {
-            handleDevInputs();
-        }
+        if (developerMode) { handleDevInputs(); }
 
     }
 
@@ -1083,6 +1079,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
     }
 
     private void drawStartGame() {
+        bitmapFont.setColor(Color.WHITE);
         //batch.draw(popUpTexture, WORLD_WIDTH / 2f - 100, WORLD_HEIGHT / 2 - 25, 200, 50);
         bitmapFont.getData().setScale(.4f);
         centerText(bitmapFont, "Press Any Key To Start", WORLD_WIDTH/2f, WORLD_HEIGHT/2f);
@@ -1224,8 +1221,8 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
 
     private void drawScore(){
         batch.draw(scoreBoardTexture, 390, 20, 80, 20);
-        bitmapFont.getData().setScale(.2f);
-        centerText(bitmapFont, score + "", WORLD_WIDTH - 50, 40);
+        bitmapFont.getData().setScale(.4f);
+        centerText(bitmapFont, score + "", WORLD_WIDTH - 50, 35);
     }
 
     private void drawEndScreen(){
