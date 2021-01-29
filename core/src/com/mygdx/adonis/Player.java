@@ -48,7 +48,7 @@ public class Player extends Ship {
     @Override
     public void draw(SpriteBatch spriteBatch) {
         super.draw(spriteBatch);
-        if(hasShield && !flashing){spriteBatch.draw(shield, hitbox.x, hitbox.y, hitbox.width, hitbox.height);}
+        if(hasShield && !flashing && energyBurn <= 0f){spriteBatch.draw(shield, hitbox.x, hitbox.y, hitbox.width, hitbox.height);}
     }
 
     public boolean ejectSelected(int ind) {

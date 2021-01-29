@@ -16,6 +16,7 @@ import static com.mygdx.adonis.Consts.BULLET_DAMAGE;
 import static com.mygdx.adonis.Consts.ENERGY_BURN_TIME;
 import static com.mygdx.adonis.Consts.ENERGY_RECHARGE;
 import static com.mygdx.adonis.Consts.PLAYER_SPEED;
+import static com.mygdx.adonis.Consts.SHIELD_MULTIPLIER;
 import static com.mygdx.adonis.Consts.TILE_HEIGHT;
 import static com.mygdx.adonis.Consts.TILE_WIDTH;
 
@@ -63,7 +64,7 @@ public abstract class Ship {
     public float shipSpeed;
 
     //Timer counting down until player can be hit again
-    private static final float INVINCIBILITY_TIME = 1F;
+    private static final float INVINCIBILITY_TIME = 0.5F;
     private float invincibilityTimer = INVINCIBILITY_TIME;
 
     //Timer counting down until we turn the draw function on/Off
@@ -115,9 +116,10 @@ public abstract class Ship {
 
     public void takeDamage(int amt) {
         if(!invincibilityFlag) {
-            if(hasShield && energy-amt*20 > 0){
-                this.energy -= amt*20;
-                if(energy < 0){
+            if(hasShield && energy > 0){
+                this.energy -= amt*SHIELD_MULTIPLIER;
+                if(energy <= 0){
+                    energy = 0;
                     energyBurn = ENERGY_BURN_TIME;
                 }
             } else {
@@ -342,7 +344,7 @@ public abstract class Ship {
         this.hitbox.width = TILE_WIDTH*(1+(ADD_ON_GROWTH*(1+this.addOns.size)));
         this.hitbox.height = TILE_HEIGHT*(1+(ADD_ON_GROWTH*(1+this.addOns.size)));
 
-        this.shipSpeed = PLAYER_SPEED + ((-2)*(float)(Math.log(0.5+this.addOns.size)));
+        this.shipSpeed = PLAYER_SPEED + ((-2.3f)*(float)(Math.log(0.5+this.addOns.size)));
     }
 
     public boolean hasAddOn(AddOnData addOn) {

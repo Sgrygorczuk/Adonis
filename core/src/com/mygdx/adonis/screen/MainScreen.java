@@ -44,6 +44,7 @@ import com.mygdx.adonis.Ship;
 
 import static com.mygdx.adonis.Consts.ADD_ON_TILE;
 import static com.mygdx.adonis.Consts.BULLET_TILE_SIZE;
+import static com.mygdx.adonis.Consts.ENERGY_BURN_TIME;
 import static com.mygdx.adonis.Consts.LEFT_BOUND;
 import static com.mygdx.adonis.Consts.RIGHT_BOUND;
 import static com.mygdx.adonis.Consts.WORLD_HEIGHT;
@@ -121,7 +122,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
 
     //Flags
     private int itemSelected = 8;
-    private boolean developerMode = false;      //Developer mode shows hit boxes and phone data
+    private boolean developerMode = true;      //Developer mode shows hit boxes and phone data
     private boolean startGame = false;
     private boolean isPaused = false;         //Stops the game from updating
     private boolean isGameEnded = false;            //Tells us game has been lost
@@ -788,7 +789,6 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
                 // player take damage
                 hit = true;
                 player.takeDamage(bullet.damage);
-                player.setInvincibilityFlag();
                 playHit();
                 if (player.health <= 0) {
                     playExplosion();
@@ -850,7 +850,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         }
 
         //Allows user to turn on dev mode
-        //if (Gdx.input.isKeyJustPressed(Input.Keys.TAB)) { developerMode = !developerMode; }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.TAB)) { developerMode = !developerMode; }
         //Give Dev actions
         if (developerMode) { handleDevInputs(); }
 
@@ -945,19 +945,19 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) {
             player.onInstall(AddOnData.BATTERY);
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) {
-            player.onDestroy(AddOnData.BATTERY);
+            player.onInstall(AddOnData.CHARGER);
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) {
-            //player.onInstall(AddOnData.CHARGER);
-        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_4)){
-            //player.onDestroy(AddOnData.CHARGER);
-        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_5)) {
             player.onInstall(AddOnData.SHIELD);
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_4)){
+            player.onInstall(AddOnData.HEALTH_BAR_GUI);
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_5)) {
+            player.onInstall(AddOnData.ENERGY_BAR_GUI);
         } else if (Gdx.input.isKeyJustPressed((Input.Keys.NUM_6))){
-            player.onDestroy(AddOnData.SHIELD);
-        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_9)) {
-            player.onDestroy(AddOnData.WEAPON_BOOST);
-        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_0)) {
             player.onInstall(AddOnData.WEAPON_BOOST);
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_9)) {
+
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_0)) {
+
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
            enemies.clear();
         }else if (Gdx.input.isKeyJustPressed(Input.Keys.O)) {
@@ -1127,8 +1127,14 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         if (!player.energyBarVisible) {
             batch.draw(energyOffTexture, 10, WORLD_HEIGHT - 115, 80, 55);
         } else {
-            batch.draw(energyOnTexture, 10, WORLD_HEIGHT - 115, 80, 55);
-            batch.draw(energyTexture, 14, WORLD_HEIGHT - 94, 73 * (float) player.energy / player.maxEnergy, 7);
+            if(player.energyBurn > 0f){
+                // TODO: Burnout Energy Bar right now it just does same thing
+                batch.draw(energyOffTexture, 10, WORLD_HEIGHT - 115, 80, 55);
+                batch.draw(healthTexture, 14, WORLD_HEIGHT - 94, 73 * (float) player.energyBurn / ENERGY_BURN_TIME, 7);
+            } else {
+                batch.draw(energyOnTexture, 10, WORLD_HEIGHT - 115, 80, 55);
+                batch.draw(energyTexture, 14, WORLD_HEIGHT - 94, 73 * (float) player.energy / player.maxEnergy, 7);
+            }
         }
     }
 
