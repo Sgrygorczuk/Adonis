@@ -877,10 +877,14 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
             player.onInstall(AddOnData.CHARGER);
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_4)){
             player.onDestroy(AddOnData.CHARGER);
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_5)) {
+            player.onInstall(AddOnData.SHIELD);
+        } else if (Gdx.input.isKeyJustPressed((Input.Keys.NUM_6))){
+            player.onDestroy(AddOnData.SHIELD);
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_9)) {
-            player.onDestroy(AddOnData.GUN);
+            player.onDestroy(AddOnData.WEAPON_BOOST);
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_0)) {
-            player.onInstall(AddOnData.GUN);
+            player.onInstall(AddOnData.WEAPON_BOOST);
         }
     }
 
