@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
+import static com.mygdx.adonis.Alignment.ENEMY;
 import static com.mygdx.adonis.Consts.ADD_ON_GROWTH;
 import static com.mygdx.adonis.Consts.BATTERY_SIZE;
 import static com.mygdx.adonis.Consts.BULLET_DAMAGE;
@@ -97,7 +98,9 @@ public abstract class Ship {
 
     public void takeDamage(int amt) {
         this.health -= amt;
-        if (health < 0 && !dieFlag) {
+        if (health <= 0 && !dieFlag) {
+            shootTimer = 999f;
+            damage = 0;
             animationTime = 0;
             dieFlag = true;
         }
@@ -124,6 +127,8 @@ public abstract class Ship {
 
             velocity.x = this.dir.getX();
             velocity.y = this.dir.getY();
+
+
 
             hitbox.x = hitbox.getX() + (velocity.x * delta * TILE_WIDTH * shipSpeed);
             hitbox.y = hitbox.getY() + (velocity.y * delta * TILE_HEIGHT * shipSpeed);
@@ -362,6 +367,7 @@ public abstract class Ship {
             width *= (float) dieSpriteSheet[0][0].getRegionWidth() / flySpriteSheet[0][0].getRegionWidth();
             offset = (width - hitbox.width) / 2f;
         }
+
         spriteBatch.draw(currentFrame, hitbox.x - offset, hitbox.y, width, hitbox.height);
     }
 }

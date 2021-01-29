@@ -577,6 +577,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         shapeRendererEnemy.setTransformMatrix(uiCamera.view);        //Screen set up camera
         shapeRendererEnemy.begin(ShapeRenderer.ShapeType.Line);    //Sets up to draw lines
         for (Ship enemy : enemies) {
+//            if(enemy.dieFlag) continue;
             enemy.drawDebug(shapeRendererEnemy);
         }
         for (Bullet bullet : projectiles) {
@@ -670,10 +671,10 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
      */
     public void updateEnemies(float delta) {
         for (Ship enemy : enemies) {
-//            System.out.println("Enemy: "+enemy.hitbox.x+", "+enemy.hitbox.y);
-            enemy.update(delta);
-//            if (enemy.hitbox.y - enemy.hitbox.height <= tiledCamera.position.y + WORLD_HEIGHT / 2f) {
-//            }
+//            if(enemy.dieFlag) continue;
+            if (enemy.hitbox.y - enemy.hitbox.height <= tiledCamera.position.y + WORLD_HEIGHT / 2f) {
+                enemy.update(delta);
+            }
         }
     }
 
@@ -706,7 +707,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
             // definitely want a better way to check collisions
             for (int i = 0; i < enemies.size; i++) {
                 Ship enemy = enemies.get(i);
-//                if (enemy.dieFlag) continue;
+                if (enemy.dieFlag) continue;
                 if (bullet.alignment != Alignment.ENEMY && enemy.isColliding(bullet.hitbox)) {
                     // enemy take damage
                     hit = true;
@@ -721,7 +722,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         }
 
         for (Ship enemy : enemies) {
-            if (enemy.health < 0 && enemy.getBlowUpFlag()) {
+            if (enemy.health <= 0 && enemy.getBlowUpFlag()) {
                 playExplosion();
                 enemies.removeValue(enemy, true);
             }
@@ -777,7 +778,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
      */
     public void handleShooting() {
         for (Ship enemy: this.enemies) {
-//            if (enemy.dieFlag) continue;
+            if (enemy.dieFlag) continue;
 
             if (enemy.shootTimer <= 0) {
                 projectiles.add(new Bullet(Alignment.ENEMY, Direction.DOWN,
@@ -935,6 +936,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         //Draws moving objects
         player.draw(batch);
         for (Ship enemy : enemies) {
+//            if(enemy.dieFlag) continue;
             enemy.draw(batch);
         }
         for (Bullet bullet : projectiles) {
