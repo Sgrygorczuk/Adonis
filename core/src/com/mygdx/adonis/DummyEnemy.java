@@ -7,8 +7,6 @@ import static com.mygdx.adonis.Direction.DOWN;
 
 public class DummyEnemy extends Ship {
 
-    private float shootTimer = 1;
-
     public DummyEnemy(TextureRegion[][] textureFly, TextureRegion[][] textureDie, float initX, float initY) {
         super(textureFly, textureDie, initX, initY, Alignment.ENEMY);
         this.velocity.y = -3 * TILE_HEIGHT;
@@ -17,16 +15,11 @@ public class DummyEnemy extends Ship {
 
     @Override
     public void update(float delta) {
-        shootTimer -= delta;
-        if (shootTimer < 0) {
-            shoot();
-            shootTimer = 1;
-        }
-
-        super.update(delta);
+        this.shootTimer -= delta;
     }
 
-    public void shoot() {
+    @Override
+    public void fire() {
         // spawn a bullet
         // in theory this could push a "bullet fired" event to the event system but whatever
     }

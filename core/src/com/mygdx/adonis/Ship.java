@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
+import static com.mygdx.adonis.Consts.ADD_ON_GROWTH;
 import static com.mygdx.adonis.Consts.TILE_HEIGHT;
 import static com.mygdx.adonis.Consts.TILE_WIDTH;
 
@@ -33,14 +34,16 @@ public abstract class Ship {
     protected TextureRegion[][] flySpriteSheet;
     protected TextureRegion[][] dieSpriteSheet;
 
-    protected Animation flyAnimation;
-    protected Animation dieAnimation;
+    protected Animation<TextureRegion> flyAnimation;
+    protected Animation<TextureRegion> dieAnimation;
 
     //Current animation frame time
     protected float animationTime = 0;
-    private boolean dieFlag = false;
+    public boolean dieFlag = false;
 
-    public Ship(TextureRegion flySpriteSheet[][], TextureRegion[][] dieSpriteSheet, float initX, float initY, Alignment align) {
+    public float shootTimer = 1f;
+
+    public Ship(TextureRegion[][] flySpriteSheet, TextureRegion[][] dieSpriteSheet, float initX, float initY, Alignment align) {
         // can multiply e.g. by 1.5, 1.2 to get more or less health
         this.align = align;
         this.maxHealth = 100;
@@ -69,7 +72,7 @@ public abstract class Ship {
                 this.flySpriteSheet[0][2], this.flySpriteSheet[0][3]);
         flyAnimation.setPlayMode(Animation.PlayMode.LOOP);
 
-        dieAnimation = new Animation<>(0.1f, this.dieSpriteSheet[0][0], this.dieSpriteSheet[0][1],
+        dieAnimation = new Animation<>(0.035f, this.dieSpriteSheet[0][0], this.dieSpriteSheet[0][1],
                 this.dieSpriteSheet[0][2], this.dieSpriteSheet[0][3], this.dieSpriteSheet[0][4], this.dieSpriteSheet[0][5],
                 this.dieSpriteSheet[0][6], this.dieSpriteSheet[0][7], this.dieSpriteSheet[0][8]);
         dieAnimation.setPlayMode(Animation.PlayMode.NORMAL);
@@ -78,12 +81,12 @@ public abstract class Ship {
     // collision isn't as simple as checking a single hitbox since each ship has multiple addons
     public boolean isColliding(Rectangle other) {
         // todo addons
-        return this.hitbox.contains(other);
+        return this.hitbox.overlaps(other);
     }
 
     public void takeDamage(int amt) {
         this.health -= amt;
-        if(health < 0 && !dieFlag){
+        if (health < 0 && !dieFlag) {
             animationTime = 0;
             dieFlag = true;
         }
@@ -91,16 +94,22 @@ public abstract class Ship {
 
     // TODO change velocity depending on game stuff
     public void update(float delta) {
-        for (AddOnData addOn : this.addOns) {
-            // addOn.update(delta);
-        }
+//        for (AddOnData addOn : this.addOns) {
+//             addOn.update(delta);
+//        }
 
         animationTime += delta;
 
-        if(health > 0) {
-            if (this.health > this.maxHealth) { this.health = this.maxHealth; }
-            if (this.maxEnergy > 0 && this.energy < this.maxEnergy) { this.energy++; }
-            if (this.energy > this.maxEnergy) { this.energy = this.maxEnergy; }
+        if (health > 0) {
+            if (this.health > this.maxHealth) {
+                this.health = this.maxHealth;
+            }
+            if (this.maxEnergy > 0 && this.energy < this.maxEnergy) {
+                this.energy++;
+            }
+            if (this.energy > this.maxEnergy) {
+                this.energy = this.maxEnergy;
+            }
 
             velocity.x = this.dir.getX();
             velocity.y = this.dir.getY();
@@ -110,7 +119,9 @@ public abstract class Ship {
         }
     }
 
-    public boolean getBlowUpFlag(){return dieAnimation.getKeyFrame(animationTime) == this.dieSpriteSheet[0][8];}
+    public boolean getBlowUpFlag() {
+        return dieAnimation.getKeyFrame(animationTime) == this.dieSpriteSheet[0][8];
+    }
 
     public void move(Direction dir) {
         this.dir = dir;
@@ -125,6 +136,10 @@ public abstract class Ship {
 
     public void onInstall(AddOnData addOn) {
         this.addOns.add(addOn);
+
+        this.hitbox.width *= ADD_ON_GROWTH;
+        this.hitbox.height *= ADD_ON_GROWTH;
+
         System.out.println(addOn.name());
         // TODO: install the addons - Paul
         switch (addOn) {
@@ -202,6 +217,10 @@ public abstract class Ship {
     }
 
     public void onDestroy(AddOnData addOn) {
+
+        this.hitbox.width /= ADD_ON_GROWTH;
+        this.hitbox.height /= ADD_ON_GROWTH;
+
         if (this.addOns.contains(addOn, true)) {
             this.addOns.removeIndex(this.addOns.indexOf(addOn, true));
         } else {
@@ -248,6 +267,20 @@ public abstract class Ship {
         }
     }
 
+    public boolean hasAddOn(AddOnData addOn) {
+        return this.addOns.contains(addOn, false);
+    }
+
+    public boolean hasWeapon() {
+        for (AddOnData addOn : this.addOns) {
+            if (addOn.isWeapon()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public void updateBullets(float delta) {
         int i = 0;
         while (i < this.bulletsFired.size) {
@@ -263,31 +296,35 @@ public abstract class Ship {
         }
     }
 
-    public void stop() { this.move(Direction.NONE); }
+    public void stop() {
+        this.move(Direction.NONE);
+    }
 
     /**
-     Input: Shaperenderd
-     Output: Void
-     Purpose: Draws the circle on the screen using render
+     * Input: Shaperenderer
+     * Output: Void
+     * Purpose: Draws the circle on the screen using render
      */
-    public  void drawDebug(ShapeRenderer shapeRenderer) {
+    public void drawDebug(ShapeRenderer shapeRenderer) {
         shapeRenderer.rect(hitbox.x, hitbox.y, hitbox.width, hitbox.height);
     }
 
     public void draw(SpriteBatch spriteBatch) {
-        for (AddOnData addOn : this.addOns) {
-            // addOn.draw(spriteBatch);
-        }
+//        for (AddOnData addOn : this.addOns) {
+//             addOn.draw(spriteBatch);
+//        }
 
         TextureRegion currentFrame;
-        float width = hitbox.width; //The die sprite is wider
+
+        float width = hitbox.width; // The die sprite is wider
         float offset = 0;           //Need to offset the width change
-        if(health > 0){ currentFrame = (TextureRegion) flyAnimation.getKeyFrame(animationTime); }
-        else {
-            currentFrame = (TextureRegion) dieAnimation.getKeyFrame(animationTime);
-            width *= (float) dieSpriteSheet[0][0].getRegionWidth()/flySpriteSheet[0][0].getRegionWidth();
-            offset = (width - hitbox.width)/2f;
+        if (health > 0) {
+            currentFrame = flyAnimation.getKeyFrame(animationTime);
+        } else {
+            currentFrame = dieAnimation.getKeyFrame(animationTime);
+            width *= (float) dieSpriteSheet[0][0].getRegionWidth() / flySpriteSheet[0][0].getRegionWidth();
+            offset = (width - hitbox.width) / 2f;
         }
-        spriteBatch.draw(currentFrame, hitbox.x - offset, hitbox.y, width , hitbox.height);
+        spriteBatch.draw(currentFrame, hitbox.x - offset, hitbox.y, width, hitbox.height);
     }
 }

@@ -6,18 +6,18 @@ import static com.mygdx.adonis.Consts.DIAGONAL_SPEED;
 
 public enum Direction {
 
-    RIGHT(1,0),
-    LEFT(-1,0),
-    UP(0,1),
-    DOWN(0,-1),
+    RIGHT(1, 0),
+    LEFT(-1, 0),
+    UP(0, 1),
+    DOWN(0, -1),
     UP_RIGHT(DIAGONAL_SPEED, DIAGONAL_SPEED),
-    UP_LEFT(-1* DIAGONAL_SPEED, DIAGONAL_SPEED),
-    DOWN_RIGHT(DIAGONAL_SPEED, -1* DIAGONAL_SPEED),
-    DOWN_LEFT(-1* DIAGONAL_SPEED, -1* DIAGONAL_SPEED),
-    NONE(0,0);
+    UP_LEFT(-1 * DIAGONAL_SPEED, DIAGONAL_SPEED),
+    DOWN_RIGHT(DIAGONAL_SPEED, -1 * DIAGONAL_SPEED),
+    DOWN_LEFT(-1 * DIAGONAL_SPEED, -1 * DIAGONAL_SPEED),
+    NONE(0, 0);
 
-    private float x;
-    private float y;
+    private final float x;
+    private final float y;
 
     public static Direction randomDir() {
         switch (MathUtils.random(3)) {
@@ -32,7 +32,7 @@ public enum Direction {
         }
     }
 
-    Direction(float x, float y){
+    Direction(float x, float y) {
         this.x = x;
         this.y = y;
     }

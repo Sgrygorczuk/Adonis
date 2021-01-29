@@ -7,6 +7,8 @@ public final class Consts {
     public static final float WORLD_WIDTH = 480;
     public static final float WORLD_HEIGHT = 320;
 
+    public static final int LEFT_BOUND = 95;
+    public static final int RIGHT_BOUND = 380;
     // TODO change to 32?
     // all entities are some multiple of these in size
     public static final float TILE_WIDTH = 32;
@@ -14,4 +16,6 @@ public final class Consts {
 
     public static final float ENEMY_SPAWN_TIME = 5;
     public static final float DIAGONAL_SPEED = 0.707f;
+
+    public static final float ADD_ON_GROWTH = 1.1f;
 }

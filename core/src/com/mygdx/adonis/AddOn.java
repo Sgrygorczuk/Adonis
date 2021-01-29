@@ -10,7 +10,7 @@ import com.badlogic.gdx.math.Rectangle;
 public abstract class AddOn {
     private Rectangle hitbox;
     private TextureRegion texture;
-    private Animation animation;
+    private Animation<TextureRegion> animation;
 
     AddOn(TextureRegion texture){
         this.texture = texture;
