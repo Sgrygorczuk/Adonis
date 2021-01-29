@@ -9,6 +9,9 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
 import static com.mygdx.adonis.Consts.ADD_ON_GROWTH;
+import static com.mygdx.adonis.Consts.BATTERY_SIZE;
+import static com.mygdx.adonis.Consts.ENERGY_RECHARGE;
+import static com.mygdx.adonis.Consts.PLAYER_SPEED;
 import static com.mygdx.adonis.Consts.TILE_HEIGHT;
 import static com.mygdx.adonis.Consts.TILE_WIDTH;
 
@@ -23,6 +26,7 @@ public abstract class Ship {
 
     public int maxEnergy;
     public int energy;
+    public int energyRecharge;
     public boolean energyBarVisible;
 
     public Direction dir;
@@ -41,7 +45,10 @@ public abstract class Ship {
     protected float animationTime = 0;
     public boolean dieFlag = false;
 
-    public float shootTimer = 1f;
+    public float shootTimer = 0.0f;
+    public float shootLag = 0.15f;
+
+    public float shipSpeed;
 
     public Ship(TextureRegion[][] flySpriteSheet, TextureRegion[][] dieSpriteSheet, float initX, float initY, Alignment align) {
         // can multiply e.g. by 1.5, 1.2 to get more or less health
@@ -51,6 +58,7 @@ public abstract class Ship {
 
         this.maxEnergy = 0;
         this.energy = 0;
+        this.energyRecharge = 1;
 
         this.flySpriteSheet = flySpriteSheet;
         this.dieSpriteSheet = dieSpriteSheet;
@@ -105,7 +113,7 @@ public abstract class Ship {
                 this.health = this.maxHealth;
             }
             if (this.maxEnergy > 0 && this.energy < this.maxEnergy) {
-                this.energy++;
+                this.energy+=this.energyRecharge;
             }
             if (this.energy > this.maxEnergy) {
                 this.energy = this.maxEnergy;
@@ -114,8 +122,8 @@ public abstract class Ship {
             velocity.x = this.dir.getX();
             velocity.y = this.dir.getY();
 
-            hitbox.x = hitbox.getX() + (velocity.x * delta * TILE_WIDTH * 5);
-            hitbox.y = hitbox.getY() + (velocity.y * delta * TILE_HEIGHT * 5);
+            hitbox.x = hitbox.getX() + (velocity.x * delta * TILE_WIDTH * shipSpeed);
+            hitbox.y = hitbox.getY() + (velocity.y * delta * TILE_HEIGHT * shipSpeed);
         }
     }
 
@@ -135,10 +143,12 @@ public abstract class Ship {
     }
 
     public void onInstall(AddOnData addOn) {
+        if(this.addOns.size >= 8){
+            return;
+        }
         this.addOns.add(addOn);
 
-        this.hitbox.width *= ADD_ON_GROWTH;
-        this.hitbox.height *= ADD_ON_GROWTH;
+        this.updateShipSpecs();
 
         System.out.println(addOn.name());
         // TODO: install the addons - Paul
@@ -163,7 +173,10 @@ public abstract class Ship {
                 break;
             case BATTERY:
                 // Holds energy and lets you use weapons and upgrades that require it
-                this.maxEnergy += 100;
+                this.maxEnergy += BATTERY_SIZE;
+                break;
+            case CHARGER:
+                this.energyRecharge *= ENERGY_RECHARGE;
                 break;
             case WEAPON_BOOST:
                 // Upgrades the damage of weapons
@@ -218,11 +231,9 @@ public abstract class Ship {
 
     public void onDestroy(AddOnData addOn) {
 
-        this.hitbox.width /= ADD_ON_GROWTH;
-        this.hitbox.height /= ADD_ON_GROWTH;
-
         if (this.addOns.contains(addOn, true)) {
             this.addOns.removeIndex(this.addOns.indexOf(addOn, true));
+            this.updateShipSpecs();
         } else {
             return;
         }
@@ -246,8 +257,10 @@ public abstract class Ship {
                 break;
             case BATTERY:
                 // Removes their max energy
-                this.maxEnergy -= 100;
-
+                this.maxEnergy -= BATTERY_SIZE;
+                break;
+            case CHARGER:
+                this.energyRecharge /= ENERGY_RECHARGE;
                 break;
             case WEAPON_BOOST:
                 // Removes damage upgrade
@@ -267,8 +280,22 @@ public abstract class Ship {
         }
     }
 
+    private void updateShipSpecs(){
+        this.hitbox.width = TILE_WIDTH*(1+(ADD_ON_GROWTH*(1+this.addOns.size)));
+        this.hitbox.height = TILE_HEIGHT*(1+(ADD_ON_GROWTH*(1+this.addOns.size)));
+
+        this.shipSpeed = PLAYER_SPEED + ((-2)*(float)(Math.log(0.5+this.addOns.size)));
+
+        System.out.println(this.hitbox.width+", "+this.hitbox.height+"\t"+this.shipSpeed);
+    }
+
     public boolean hasAddOn(AddOnData addOn) {
         return this.addOns.contains(addOn, false);
+    }
+
+    public AddOnData getAddOnAt(int index){
+        if(index < addOns.size) return this.addOns.get(index);
+        return null;
     }
 
     public boolean hasWeapon() {

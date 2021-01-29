@@ -9,7 +9,8 @@ public class DummyEnemy extends Ship {
 
     public DummyEnemy(TextureRegion[][] textureFly, TextureRegion[][] textureDie, float initX, float initY) {
         super(textureFly, textureDie, initX, initY, Alignment.ENEMY);
-        this.velocity.y = -3 * TILE_HEIGHT;
+        this.shipSpeed = 10;
+        this.velocity.y = 3 * TILE_HEIGHT;
         this.dir = DOWN;
     }
 

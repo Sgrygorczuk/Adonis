@@ -223,6 +223,7 @@ public class MenuScreen extends ScreenAdapter{
     private void showMusic(){
         music = adonis.getAssetManager().get("Music/MainMenuMusic.mp3", Music.class);
         music.setLooping(true);
+        music.setVolume(0.25f);
         music.play();
     }
 

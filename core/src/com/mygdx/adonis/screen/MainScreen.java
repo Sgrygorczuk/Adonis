@@ -23,6 +23,7 @@ import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
@@ -481,7 +482,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
     private void showMusic() {
         music = adonis.getAssetManager().get("Music/GameMusic.mp3", Music.class);
         music.setLooping(true);
-        music.setVolume(.1f);
+        music.setVolume(.35f);
         music.play();
     }
 
@@ -598,6 +599,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         for (Bullet bullet : projectiles) {
 //            if (bullet.alignment == Alignment.PLAYER) {
                 bullet.drawDebug(shapeRendererUser);
+
 //            }
         }
         shapeRendererUser.end();
@@ -649,6 +651,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
     public void updatePlayer(float delta) {
         player.update(delta);
         //If player has 0 lives end the game
+//        System.out.println("Player: "+player.hitbox.x+", "+player.hitbox.y);
         if (player.health == 0) {
             endGame();
             // we don't need to update anymore if the game is over
@@ -666,9 +669,10 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
      */
     public void updateEnemies(float delta) {
         for (Ship enemy : enemies) {
-            if (enemy.hitbox.y - enemy.hitbox.height <= tiledCamera.position.y + WORLD_HEIGHT / 2f) {
-                enemy.update(delta);
-            }
+//            System.out.println("Enemy: "+enemy.hitbox.x+", "+enemy.hitbox.y);
+            enemy.update(delta);
+//            if (enemy.hitbox.y - enemy.hitbox.height <= tiledCamera.position.y + WORLD_HEIGHT / 2f) {
+//            }
         }
     }
 
@@ -701,8 +705,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
             // definitely want a better way to check collisions
             for (int i = 0; i < enemies.size; i++) {
                 Ship enemy = enemies.get(i);
-                if (enemy.dieFlag) continue;
-
+//                if (enemy.dieFlag) continue;
                 if (bullet.alignment != Alignment.ENEMY && enemy.isColliding(bullet.hitbox)) {
                     // enemy take damage
                     hit = true;
@@ -751,6 +754,10 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         handleShooting();           //Checks user shoot input
         handleMovement();           //Checks user movement input
         handleScrolling();          //Checks user scroll input
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
+            System.out.println(8-itemSelected);
+            player.ejectSelected(8-itemSelected);
+        }
         //Allows user to turn on dev mode
         if (Gdx.input.isKeyJustPressed(Input.Keys.TAB)) {
             developerMode = !developerMode;
@@ -769,12 +776,12 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
      */
     public void handleShooting() {
         for (Ship enemy: this.enemies) {
-            if (enemy.dieFlag) continue;
+//            if (enemy.dieFlag) continue;
 
             if (enemy.shootTimer <= 0) {
                 projectiles.add(new Bullet(Alignment.ENEMY, Direction.DOWN,
-                        player.hitbox.getX() + player.hitbox.getWidth() / 4f,
-                        player.hitbox.getY() + player.hitbox.height - 5,
+                        enemy.hitbox.getX() + enemy.hitbox.getWidth() / 4f,
+                        enemy.hitbox.getY() + enemy.hitbox.height - 5,
                         playerLaserTexture));
                 enemy.shootTimer = MathUtils.random(.7f, 1f);
             }
@@ -784,11 +791,12 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         //Used to make sure that the bullets don't start shooting when the user is trying to
         //click main menu
         float touchedX = Gdx.input.getX() * WORLD_WIDTH / Gdx.graphics.getWidth();
-        if (Gdx.input.isButtonPressed(Input.Buttons.LEFT) && touchedX >= LEFT_BOUND - 5 && touchedX <= RIGHT_BOUND) {
+        if (Gdx.input.isButtonPressed(Input.Buttons.LEFT) && player.shootTimer <= 0 && touchedX >= LEFT_BOUND - 5 && touchedX <= RIGHT_BOUND) {
             projectiles.add(new Bullet(Alignment.PLAYER, Direction.UP,
-                    player.hitbox.getX() + player.hitbox.getWidth() / 4f,
-                    player.hitbox.getY() + player.hitbox.height - 5,
+                    player.hitbox.x + player.hitbox.width*0.345F,
+                    player.hitbox.y + player.hitbox.height*0.835f,
                     playerLaserTexture));
+            player.shootTimer = player.shootLag;
             playPlayerShoot();
         }
     }
@@ -858,14 +866,18 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
      * Purpose: Allows Dev to mess with addOns for the ship
      */
     private void handleDevInputs() {
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_0)) {
-            player.onInstall(AddOnData.GUN);
-        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) {
             player.onInstall(AddOnData.BATTERY);
-        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) {
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) {
             player.onDestroy(AddOnData.BATTERY);
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) {
+            player.onInstall(AddOnData.CHARGER);
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_4)){
+            player.onDestroy(AddOnData.CHARGER);
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_9)) {
             player.onDestroy(AddOnData.GUN);
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_0)) {
+            player.onInstall(AddOnData.GUN);
         }
     }
 
@@ -1064,12 +1076,24 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
      * Purpose: Draws the addOn information for currently selected addOn.
      */
     private void drawAddOnInfo() {
+        AddOnData selectedAddOn = player.getAddOnAt(8-itemSelected);
+        String name;
+        String description;
+        if(selectedAddOn == null){
+            name = "";
+            description = "";
+        } else {
+            name = selectedAddOn.getName();
+            description = selectedAddOn.getDescription();
+        }
+//        String descriptions = selectedAddOn.description();
         batch.draw(infoBoardTexture, 390, 30, 80, 200);
-        bitmapFont.getData().setScale(.5f);
-        centerText(bitmapFont, "NAME", WORLD_WIDTH - 50, 180);
+        bitmapFont.getData().setScale(.4f);
+        bitmapFont.setColor(Color.BLACK);
+        centerText(bitmapFont, name, WORLD_WIDTH - 50, 180);
         batch.draw(addOnTexture[0][0], WORLD_WIDTH - 70, 130, 40, 20);
-        bitmapFont.getData().setScale(.35f);
-        centerText(bitmapFont, addNewLine("Adds HP Visibility", 12), WORLD_WIDTH - 50, 110);
+        bitmapFont.getData().setScale(.3f);
+        centerText(bitmapFont, addNewLine(description, 12), WORLD_WIDTH - 50, 110);
     }
 
     /**
@@ -1078,12 +1102,14 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
      * Purpose: Draws dev data
      */
     private void drawDeveloperInfo() {
-        centerText(bitmapFont, "Player X:" + player.hitbox.getX(), 80, 300);
-        centerText(bitmapFont, "Player Y:" + player.hitbox.getY(), 80, 280);
-        centerText(bitmapFont, "Player Max Health:" + player.maxHealth, 80, 260);
-        centerText(bitmapFont, "Player Health:" + player.health, 80, 240);
-        centerText(bitmapFont, "Player Max Energy:" + player.maxEnergy, 80, 220);
-        centerText(bitmapFont, "Player Energy:" + player.energy, 80, 200);
+        bitmapFont.setColor(Color.WHITE);
+        bitmapFont.getData().setScale(0.2f);
+        centerText(bitmapFont, "Player X:" + player.hitbox.getX(), 140, 300);
+        centerText(bitmapFont, "Player Y:" + player.hitbox.getY(), 140, 290);
+        centerText(bitmapFont, "Player Max Health:" + player.maxHealth, 140, 280);
+        centerText(bitmapFont, "Player Health:" + player.health, 140, 270);
+        centerText(bitmapFont, "Player Max Energy:" + player.maxEnergy, 140, 260);
+        centerText(bitmapFont, "Player Energy:" + player.energy, 140, 250);
     }
 
     /**
