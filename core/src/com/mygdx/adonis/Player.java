@@ -14,9 +14,9 @@ public class Player extends Ship {
     public AddOn selectedAddOn;
     private Texture shield;
 
-    public Player(TextureRegion[][] textureFly, TextureRegion[][] textureDie, Texture shield,
+    public Player(TextureRegion[][] spriteSheet, Texture shield,
                   float initX, float initY) {
-        super(textureFly, textureDie, initX, initY, Alignment.PLAYER);
+        super(spriteSheet, initX, initY, Alignment.PLAYER, false);
         this.shield = shield;
         this.shipSpeed = PLAYER_SPEED;
     }

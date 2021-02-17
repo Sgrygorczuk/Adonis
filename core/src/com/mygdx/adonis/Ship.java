@@ -1,5 +1,6 @@
 package com.mygdx.adonis;
 
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -7,6 +8,8 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
+
+import sun.security.util.ArrayUtil;
 
 import static com.mygdx.adonis.Alignment.ENEMY;
 import static com.mygdx.adonis.Alignment.PLAYER;
@@ -45,18 +48,41 @@ public abstract class Ship {
     public Array<AddOnData> addOns;
 
     //Sprite sheet used
-    protected TextureRegion[][] flySpriteSheet;
-    protected TextureRegion[][] dieSpriteSheet;
+    protected TextureRegion[][] spriteSheet;
 
-    protected Animation<TextureRegion> flyAnimation;
+    /**
+     * 0 - Fly forward netural
+     * 1 - Turn right,
+     * 2 - Coming back from right
+     * 3 - Turn left
+     * 4 - Coming back from left
+     * 5 - Roll right
+     * 6 - Roll left
+     * */
+    private boolean animationPause = false;
+    protected int animationState = 0;
+    protected TextureRegion forwardTexture;
+    protected Animation<TextureRegion> turnRightAnimation;
+    protected Animation<TextureRegion> turnRightBackAnimation;
+    protected Animation<TextureRegion> turnLeftAnimation;
+    protected Animation<TextureRegion> turnLeftBackAnimation;
+    protected Animation<TextureRegion> rollRightAnimation;
+    protected Animation<TextureRegion> rollLeftAnimation;
     protected Animation<TextureRegion> dieAnimation;
 
     //Current animation frame time
     public int damage;
     private boolean invincibilityFlag;
     protected boolean flashing = false;
-    protected float animationTime = 0;
+    protected float animationRightTime = 0;
+    protected float animationRightBackTime = 0;
+    protected float animationLeftTime = 0;
+    protected float animationLeftBackTime = 0;
+    protected float animationDieTime = 0;
+
     public boolean dieFlag = false;
+
+    private boolean enemyImageFlag;
 
     public float shootTimer = 0.0f;
     public float shootLag = 0.15f; //Player Lag
@@ -71,20 +97,21 @@ public abstract class Ship {
     private static final float FLASHING_TIME = 0.1F;
     private float flashingTimer = FLASHING_TIME;
 
-    public Ship(TextureRegion[][] flySpriteSheet, TextureRegion[][] dieSpriteSheet, float initX, float initY, Alignment align) {
+    public Ship(TextureRegion[][] spriteSheet, float initX, float initY, Alignment align, boolean enemyImageFlag) {
         // can multiply e.g. by 1.5, 1.2 to get more or less health
         this.align = align;
         this.maxHealth = 100;
         this.health = 100;
+
+        this.enemyImageFlag = enemyImageFlag;
 
         this.maxEnergy = 0;
         this.energy = 0;
         this.energyRecharge = 1;
         this.damage = BULLET_DAMAGE;
 
-        this.flySpriteSheet = flySpriteSheet;
-        this.dieSpriteSheet = dieSpriteSheet;
-        setUpAnimation();
+        this.spriteSheet = spriteSheet;
+        setUpAnimations();
 
         this.hitbox = new Rectangle(initX, initY, TILE_WIDTH, TILE_HEIGHT);
         this.velocity = new Vector2(0, 0);
@@ -97,15 +124,23 @@ public abstract class Ship {
      * Output: Void
      * Purpose: Sets up the animation loops in all of the directions
      */
-    protected void setUpAnimation() {
-        flyAnimation = new Animation<>(0.25f, this.flySpriteSheet[0][0], this.flySpriteSheet[0][1],
-                this.flySpriteSheet[0][2], this.flySpriteSheet[0][3]);
-        flyAnimation.setPlayMode(Animation.PlayMode.LOOP);
+    protected void setUpAnimations() {
+        //Sets up the generic going forward
+        forwardTexture = spriteSheet[0][0];
 
-        dieAnimation = new Animation<>(0.035f, this.dieSpriteSheet[0][0], this.dieSpriteSheet[0][1],
-                this.dieSpriteSheet[0][2], this.dieSpriteSheet[0][3], this.dieSpriteSheet[0][4], this.dieSpriteSheet[0][5],
-                this.dieSpriteSheet[0][6], this.dieSpriteSheet[0][7], this.dieSpriteSheet[0][8]);
-        dieAnimation.setPlayMode(Animation.PlayMode.NORMAL);
+        float testVar = 55;
+        dieAnimation = setUpAnimation(1/180f, 0, Animation.PlayMode.NORMAL);
+        turnRightAnimation = setUpAnimation(1/testVar, 4, Animation.PlayMode.LOOP);
+        turnRightBackAnimation = setUpAnimation(1/testVar, 4, Animation.PlayMode.LOOP_REVERSED);
+        turnLeftAnimation = setUpAnimation(1/testVar, 3, Animation.PlayMode.LOOP);
+        turnLeftBackAnimation = setUpAnimation(1/testVar, 3, Animation.PlayMode.LOOP_REVERSED);
+
+    }
+
+    private Animation<TextureRegion> setUpAnimation(float duration, int row, Animation.PlayMode playMode){
+        Animation<TextureRegion> animation = new Animation<>(duration, this.spriteSheet[row]);
+        animation.setPlayMode(playMode);
+        return animation;
     }
 
     // collision isn't as simple as checking a single hitbox since each ship has multiple addons
@@ -153,9 +188,9 @@ public abstract class Ship {
 
     // TODO change velocity depending on game stuff
     public void update(float delta) {
-        animationTime += delta;
 
         if (health > 0) {
+            updateAnimationState(delta);
             if(invincibilityFlag){invincibilityTimer(delta);}
 
             if (this.health > this.maxHealth) {
@@ -178,10 +213,86 @@ public abstract class Ship {
             hitbox.x = hitbox.getX() + (velocity.x * delta * TILE_WIDTH * shipSpeed);
             hitbox.y = hitbox.getY() + (velocity.y * delta * TILE_HEIGHT * shipSpeed);
         }
+        else{
+            animationState = 10;
+            animationDieTime += delta;
+        }
+
+    }
+
+    public void updateAnimationState(float delta){
+        switch (animationState){
+            case 0:{
+                if(velocity.x > 0){
+                    animationState = 1;
+                    animationPause = true;
+                }
+                else if(velocity.x < 0){
+                    animationState = 3;
+                    animationPause = true;
+                }
+            break;
+            }
+            case 1:{
+                System.out.println("A " + turnRightAnimation.getKeyFrameIndex(animationRightTime) + " " + animationRightTime);
+                if(velocity.x > 0 && turnRightAnimation.getKeyFrameIndex(animationRightTime) == 29){
+
+                }
+                else if(velocity.x <= 0){
+                    animationState = 2;
+                    animationRightTime = 0;
+                }
+                else {
+                    animationRightTime += delta;
+                }
+                break;
+            }
+            case 2:{
+                System.out.println("B " + turnRightBackAnimation.getKeyFrameIndex(animationRightBackTime) + " " + animationRightBackTime);
+                if(velocity.x <= 0 && turnRightBackAnimation.getKeyFrameIndex(animationRightBackTime) == 0){
+                    animationState = 0;
+                    animationRightBackTime = 0;
+                }
+                else {
+                    animationRightBackTime += delta;
+                }
+                break;
+            }
+            case 3:{
+                System.out.println("C " + turnLeftAnimation.getKeyFrameIndex(animationLeftTime) + " " + animationLeftTime);
+                if(velocity.x < 0 && turnLeftAnimation.getKeyFrameIndex(animationLeftTime) == 29){
+
+                }
+                else if(velocity.x >= 0){
+                    animationState = 4;
+                    animationLeftTime = 0;
+                }
+                else {
+                    animationLeftTime += delta;
+                }
+                break;
+            }
+            case 4:{
+                System.out.println("D " + turnLeftBackAnimation.getKeyFrameIndex(animationLeftBackTime) + " " + animationLeftBackTime);
+                if(velocity.x >= 0 && turnLeftBackAnimation.getKeyFrameIndex(animationLeftBackTime) == 0){
+                    animationState = 0;
+                    animationLeftBackTime= 0;
+                }
+                else {
+                    animationLeftBackTime += delta;
+                }
+                break;
+            }
+
+            default:{
+
+            }
+        }
+
     }
 
     public boolean getBlowUpFlag() {
-        return dieAnimation.getKeyFrame(animationTime) == this.dieSpriteSheet[0][8];
+        return dieAnimation.isAnimationFinished(animationDieTime);
     }
 
     public void move(Direction dir) {
@@ -399,15 +510,27 @@ public abstract class Ship {
 
             float width = hitbox.width; // The die sprite is wider
             float offset = 0;           //Need to offset the width change
-            if (health > 0) {
-                currentFrame = flyAnimation.getKeyFrame(animationTime);
-            } else {
-                currentFrame = dieAnimation.getKeyFrame(animationTime);
-                width *= (float) dieSpriteSheet[0][0].getRegionWidth() / flySpriteSheet[0][0].getRegionWidth();
-                offset = (width - hitbox.width) / 2f;
+            if (animationState == 0) {
+                currentFrame = forwardTexture;
+            }
+            else if(animationState == 1){
+                currentFrame = turnRightAnimation.getKeyFrame(animationRightTime);
+            }
+            else if(animationState == 2){
+                currentFrame = turnRightBackAnimation.getKeyFrame(animationRightBackTime);
+            }
+            else if(animationState == 3){
+                currentFrame = turnLeftAnimation.getKeyFrame(animationLeftTime);
+            }
+            else if(animationState == 4){
+                currentFrame = turnLeftBackAnimation.getKeyFrame(animationLeftBackTime);
+            }
+            else {
+                currentFrame = dieAnimation.getKeyFrame(animationDieTime);
             }
 
-            spriteBatch.draw(currentFrame, hitbox.x - offset, hitbox.y, width, hitbox.height);
+            //The enemyImageFlag ? flips the enemy image and accounts for move 
+            spriteBatch.draw(currentFrame, hitbox.x, enemyImageFlag ? hitbox.y + hitbox.height: hitbox.y , width, enemyImageFlag ? -hitbox.height : hitbox.height);
         }
     }
 }

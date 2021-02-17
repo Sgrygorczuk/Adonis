@@ -97,12 +97,10 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
     private Texture scoreBoardTexture;
     private Texture shieldTexture;
 
-    private TextureRegion[][] playerFlyTexture;
-    private TextureRegion[][] playerDieTexture;
-    private TextureRegion[][] enemyOneFlyTexture;
-    private TextureRegion[][] enemyOneDieTexture;
-    private TextureRegion[][] enemyTwoFlyTexture;
-    private TextureRegion[][] enemyTwoDieTexture;
+    private TextureRegion[][] playerSpriteSheet;
+    private TextureRegion[][] enemyZeroSpriteSheet;
+    private TextureRegion[][] enemyOneSpriteSheet;
+    private TextureRegion[][] enemyTwoSpriteSheet;
     private TextureRegion[][] playerLaserTexture;
     private TextureRegion[][] enemyLaserTexture;
     private TextureRegion[][] addOnTexture;
@@ -208,20 +206,18 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         shieldTexture = new Texture(Gdx.files.internal("Sprites/Shield.png"));
 
         //Texture Regions
-        Texture playerFlyTexturePath = new Texture(Gdx.files.internal("Sprites/PlayerSpriteSheetFly.png"));
-        playerFlyTexture = new TextureRegion(playerFlyTexturePath).split(playerFlyTexturePath.getWidth() / 4, playerFlyTexturePath.getHeight());
-        Texture playerDieTexturePath = new Texture(Gdx.files.internal("Sprites/PlayerSpriteSheetDie.png"));
-        playerDieTexture = new TextureRegion(playerDieTexturePath).split(playerDieTexturePath.getWidth() / 9, playerDieTexturePath.getHeight());
+        Texture playerTexturePath = new Texture(Gdx.files.internal("Sprites/PlayerShip.png"));
+        playerSpriteSheet = new TextureRegion(playerTexturePath).split(playerTexturePath.getWidth() / 30, playerTexturePath.getHeight() / 5);
 
-        Texture enemyOneFlyPath = new Texture(Gdx.files.internal("Sprites/EnemyOneSpriteSheetFly.png"));
-        enemyOneFlyTexture = new TextureRegion(enemyOneFlyPath).split(enemyOneFlyPath.getWidth() / 4, enemyOneFlyPath.getHeight());
-        Texture enemyOneDiePath = new Texture(Gdx.files.internal("Sprites/EnemyOneSpriteSheetDie.png"));
-        enemyOneDieTexture = new TextureRegion(enemyOneDiePath).split(enemyOneDiePath.getWidth() / 9, enemyOneDiePath.getHeight());
+        Texture enemyZeroTexturePath = new Texture(Gdx.files.internal("Sprites/EnemyZero.png"));
+        enemyZeroSpriteSheet = new TextureRegion(enemyZeroTexturePath).split(enemyZeroTexturePath.getWidth() / 30, enemyZeroTexturePath.getHeight() / 5);
 
-        Texture enemyTwoFlyPath = new Texture(Gdx.files.internal("Sprites/EnemyTwoSpriteSheetFly.png"));
-        enemyTwoFlyTexture = new TextureRegion(enemyTwoFlyPath).split(enemyTwoFlyPath.getWidth() / 4, enemyTwoFlyPath.getHeight());
-        Texture enemyTwoDiePath = new Texture(Gdx.files.internal("Sprites/EnemyTwoSpriteSheetDie.png"));
-        enemyTwoDieTexture = new TextureRegion(enemyTwoDiePath).split(enemyTwoDiePath.getWidth() / 9, enemyTwoDiePath.getHeight());
+        Texture enemyOneTexturePath = new Texture(Gdx.files.internal("Sprites/EnemyOne.png"));
+        enemyOneSpriteSheet = new TextureRegion(enemyOneTexturePath).split(enemyOneTexturePath.getWidth() / 30, enemyOneTexturePath.getHeight() / 5);
+
+        Texture enemyTwoTexturePath = new Texture(Gdx.files.internal("Sprites/EnemyTwo.png"));
+        enemyTwoSpriteSheet = new TextureRegion(enemyTwoTexturePath).split(enemyTwoTexturePath.getWidth() / 30, enemyTwoTexturePath.getHeight() / 5);
+
 
         Texture playerLaserTexturePath = new Texture(Gdx.files.internal("Sprites/PlayerShot.png"));
         playerLaserTexture = new TextureRegion(playerLaserTexturePath).split(playerLaserTexturePath.getWidth() / 2, playerLaserTexturePath.getHeight());
@@ -263,15 +259,15 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         Ship enemy;
         switch (enemyType) {
             case DUMMY: {
-                enemy = new DummyEnemy(enemyOneFlyTexture, enemyOneDieTexture, x, y);
+                enemy = new DummyEnemy(enemyOneSpriteSheet, x, y);
                 break;
             }
             case DUMMY_TWO: {
-                enemy = new DummyEnemy(enemyTwoFlyTexture, enemyTwoDieTexture, x, y);
+                enemy = new DummyEnemy(enemyTwoSpriteSheet, x, y);
                 break;
             }
             default:
-                enemy = new DummyEnemy(enemyOneFlyTexture, enemyOneDieTexture, x, y);
+                enemy = new DummyEnemy(enemyZeroSpriteSheet, x, y);
         }
 
         this.enemies.add(enemy);
@@ -470,7 +466,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         MapLayer mapLayer = tiledMap.getLayers().get("Player");
         //For each instance of that in the layered map create a skull collectible at it's position
         for (MapObject mapObject : mapLayer.getObjects()) {
-            player = new Player(playerFlyTexture, playerDieTexture, shieldTexture,
+            player = new Player(playerSpriteSheet, shieldTexture,
                     mapObject.getProperties().get("x", Float.class),
                     mapObject.getProperties().get("y", Float.class));
         }

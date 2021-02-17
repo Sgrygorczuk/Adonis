@@ -10,8 +10,8 @@ import static com.mygdx.adonis.Direction.DOWN;
 
 public class DummyEnemy extends Ship {
 
-    public DummyEnemy(TextureRegion[][] textureFly, TextureRegion[][] textureDie, float initX, float initY) {
-        super(textureFly, textureDie, initX, initY, Alignment.ENEMY);
+    public DummyEnemy(TextureRegion[][] spriteSheet, float initX, float initY) {
+        super(spriteSheet, initX, initY, Alignment.ENEMY, true);
         this.shipSpeed = ENEMY_SPEED;
         this.velocity.y = TILE_HEIGHT;
         this.dir = DOWN;
