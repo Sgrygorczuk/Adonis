@@ -23,11 +23,28 @@ public class Bullet {
 
     public Alignment alignment;
 
-    public Bullet(Alignment alignment, Direction dir, float x, float y, TextureRegion[][] texture, int damage) {
+    public Bullet(Alignment alignment, Direction dir, float x, float y, float xTowards, float yTowards, TextureRegion[][] texture, int damage) {
         this.alignment = alignment;
         this.dir = dir;
         this.hitbox = new Rectangle(x, y, BULLET_TILE_SIZE, BULLET_TILE_SIZE);
         this.velocity = new Vector2(0, 0);
+        if (this.alignment == Alignment.PLAYER) {
+            this.velocity.y = 1;
+            velocity.x = 0;
+        }
+        else {
+            if (y > yTowards) {
+                this.velocity.x = -(xTowards - x) / (yTowards - y);
+            }
+            else{
+                this.velocity.x = -(xTowards - x) / (y - yTowards);
+            }
+            if(velocity.x > 1){velocity.x = 1;}
+            else if(velocity.x < -1){velocity.x = -1;}
+            this.velocity.y = -3;
+            System.out.println(velocity);
+        }
+
         this.texture = texture;
         this.damage = damage;
         setUpAnimation();
@@ -44,14 +61,8 @@ public class Bullet {
     }
 
     public void update(float delta) {
-        if (this.alignment == Alignment.PLAYER) {
-            this.velocity.y = 1;
-        } else {
-            this.velocity.y = -1;
-        }
-
-        hitbox.x = hitbox.getX() + dir.getX();
-        hitbox.y = hitbox.getY() + dir.getY() * 3;
+        hitbox.x += velocity.x;
+        hitbox.y += velocity.y;
 
         animationTime += delta;
     }

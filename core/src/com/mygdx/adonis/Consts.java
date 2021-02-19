@@ -18,6 +18,8 @@ public final class Consts {
     public static final int BULLET_DAMAGE = 10; // Default bullet damage
     public static final float BULLET_TILE_SIZE = TILE_HEIGHT/2f;
     public static final float BULLET_DRAW_OFFSET = 5;
+    public static final float BULLET_SPAWN_TIME_START = 2f;
+    public static final float BULLET_SPAWN_TIME_END = 2.5f;
 
     public static final float ADD_ON_TILE = TILE_HEIGHT/2f;
 
@@ -26,7 +28,7 @@ public final class Consts {
 
     public static final float DIAGONAL_SPEED = 0.707f; // Diagonal speed calculated
 
-    public static final float ADD_ON_GROWTH = 0.3f; // How big
+    public static final float ADD_ON_GROWTH = 0.15f; // How big the ship should grow
 
     public static final int BATTERY_SIZE = 500;
     public static final int SHIELD_MULTIPLIER = 20; // amt * shield_multiplier is the damage a shield takes

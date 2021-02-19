@@ -37,16 +37,22 @@ import com.mygdx.adonis.Adonis;
 import com.mygdx.adonis.Alignment;
 import com.mygdx.adonis.Bullet;
 import com.mygdx.adonis.Direction;
-import com.mygdx.adonis.DummyEnemy;
-import com.mygdx.adonis.EnemyType;
+import com.mygdx.adonis.enemies.BaseEnemy;
+import com.mygdx.adonis.enemies.BossEnemy;
+import com.mygdx.adonis.enemies.CargoEnemy;
+import com.mygdx.adonis.enemies.DiveEnemy;
+import com.mygdx.adonis.enemies.EnemyType;
 import com.mygdx.adonis.Player;
 import com.mygdx.adonis.Ship;
 
 import static com.mygdx.adonis.Consts.ADD_ON_TILE;
+import static com.mygdx.adonis.Consts.BULLET_SPAWN_TIME_END;
+import static com.mygdx.adonis.Consts.BULLET_SPAWN_TIME_START;
 import static com.mygdx.adonis.Consts.BULLET_TILE_SIZE;
 import static com.mygdx.adonis.Consts.ENERGY_BURN_TIME;
 import static com.mygdx.adonis.Consts.LEFT_BOUND;
 import static com.mygdx.adonis.Consts.RIGHT_BOUND;
+import static com.mygdx.adonis.Consts.TILE_WIDTH;
 import static com.mygdx.adonis.Consts.WORLD_HEIGHT;
 import static com.mygdx.adonis.Consts.WORLD_WIDTH;
 
@@ -258,16 +264,24 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
     private void spawnEnemy(EnemyType enemyType, float x, float y) {
         Ship enemy;
         switch (enemyType) {
-            case DUMMY: {
-                enemy = new DummyEnemy(enemyOneSpriteSheet, x, y);
+            case CARGO: {
+                enemy = new CargoEnemy(enemyZeroSpriteSheet, x, y);
                 break;
             }
-            case DUMMY_TWO: {
-                enemy = new DummyEnemy(enemyTwoSpriteSheet, x, y);
+            case BASE: {
+                enemy = new BaseEnemy(enemyOneSpriteSheet, x, y);
+                break;
+            }
+            case DIVE: {
+                enemy = new DiveEnemy(enemyTwoSpriteSheet, x, y);
+                break;
+            }
+            case BOSS: {
+                enemy = new BossEnemy(playerSpriteSheet, WORLD_WIDTH/2f - 15*TILE_WIDTH/2f, y);
                 break;
             }
             default:
-                enemy = new DummyEnemy(enemyZeroSpriteSheet, x, y);
+                enemy = new CargoEnemy(enemyZeroSpriteSheet, x, y);
         }
 
         this.enemies.add(enemy);
@@ -479,18 +493,35 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
      */
     private void populateEnemies() {
         //Grab the layer from tiled map
-        MapLayer mapLayer = tiledMap.getLayers().get("EnemyOne");
+        MapLayer mapLayer = tiledMap.getLayers().get("Cargo");
         //For each instance of that in the layered map create a skull collectible at it's position
         for (MapObject mapObject : mapLayer.getObjects()) {
-            spawnEnemy(EnemyType.DUMMY,
+            spawnEnemy(EnemyType.CARGO,
                     mapObject.getProperties().get("x", Float.class),
                     mapObject.getProperties().get("y", Float.class));
         }
 
-        mapLayer = tiledMap.getLayers().get("EnemyTwo");
+        mapLayer = tiledMap.getLayers().get("Base");
         //For each instance of that in the layered map create a skull collectible at it's position
         for (MapObject mapObject : mapLayer.getObjects()) {
-            spawnEnemy(EnemyType.DUMMY_TWO,
+            spawnEnemy(EnemyType.BASE,
+                    mapObject.getProperties().get("x", Float.class),
+                    mapObject.getProperties().get("y", Float.class));
+        }
+
+
+        mapLayer = tiledMap.getLayers().get("Dive");
+        //For each instance of that in the layered map create a skull collectible at it's position
+        for (MapObject mapObject : mapLayer.getObjects()) {
+            spawnEnemy(EnemyType.DIVE,
+                    mapObject.getProperties().get("x", Float.class),
+                    mapObject.getProperties().get("y", Float.class));
+        }
+
+        mapLayer = tiledMap.getLayers().get("Boss");
+        //For each instance of that in the layered map create a skull collectible at it's position
+        for (MapObject mapObject : mapLayer.getObjects()) {
+            spawnEnemy(EnemyType.BOSS,
                     mapObject.getProperties().get("x", Float.class),
                     mapObject.getProperties().get("y", Float.class));
         }
@@ -732,23 +763,27 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
              enemy.update(delta);
 
             if (enemy.health <= 0 && enemy.getBlowUpFlag() || enemy.hitbox.y < -enemy.hitbox.height) {
-                if(enemy.hitbox.y > -enemy.hitbox.height) {playExplosion();}
-                spawnAddOn(MathUtils.random(0, 4), enemy.hitbox.x + enemy.hitbox.getWidth()/2f - ADD_ON_TILE/2f,
-                        enemy.hitbox.y + enemy.hitbox.height/2f - ADD_ON_TILE/2f);
+                if(enemy.hitbox.y > -enemy.hitbox.height) {
+                    playExplosion();
+                    this.score += enemy.points;
+                }
+                if(enemy.maxHealth == 60) {
+                    spawnAddOn(MathUtils.random(0, 4), enemy.hitbox.x + enemy.hitbox.getWidth() / 2f - ADD_ON_TILE / 2f,
+                            enemy.hitbox.y + enemy.hitbox.height / 2f - ADD_ON_TILE / 2f);
+                }
                 enemies.removeValue(enemy, true);
-                this.score += 100;
             }
 
             if (enemy.dieFlag) continue;
 
-            if(enemy.hitbox.y <= WORLD_HEIGHT) {
+            if(enemy.hitbox.y <= WORLD_HEIGHT && enemy.maxHealth != 60) {
                 if (enemy.shootTimer <= 0) {
                     projectiles.add(new Bullet(Alignment.ENEMY, Direction.DOWN,
                             enemy.hitbox.getX() + enemy.hitbox.getWidth()/2f - BULLET_TILE_SIZE/2f,
-                            enemy.hitbox.getY(),
+                            enemy.hitbox.getY(), player.hitbox.x + player.hitbox.width/2f, player.hitbox.y,
                             enemyLaserTexture,
                             enemy.damage));
-                    enemy.shootTimer = MathUtils.random(1f, 2f);
+                    enemy.shootTimer = MathUtils.random(BULLET_SPAWN_TIME_START, BULLET_SPAWN_TIME_END);
                     playEnemyShoot();
                 }
             }
@@ -767,7 +802,8 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
             Bullet bullet = projectiles.get(bulletInd);
             boolean hit = false;
             bullet.update(delta);
-            if (bullet.hitbox.getY() < 0 || bullet.hitbox.getY() > WORLD_HEIGHT) {
+            if (bullet.hitbox.getY() < 0 || bullet.hitbox.getY() > WORLD_HEIGHT
+                    || bullet.hitbox.getX() + bullet.hitbox.getWidth() < 100 || bullet.hitbox.getX()  > 380) {
                 projectiles.removeValue(bullet, true);
                 continue;
             }
@@ -865,7 +901,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         if (Gdx.input.isButtonPressed(Input.Buttons.LEFT) && player.shootTimer <= 0 && touchedX >= LEFT_BOUND - 5 && touchedX <= RIGHT_BOUND) {
             projectiles.add(new Bullet(Alignment.PLAYER, Direction.UP,
                     player.hitbox.x + player.hitbox.width/2f - BULLET_TILE_SIZE/2f,
-                    player.hitbox.y + player.hitbox.height*0.835f,
+                    player.hitbox.y + player.hitbox.height*0.835f, 0, 0,
                     playerLaserTexture,
                     player.damage));
             player.shootTimer = player.shootLag;
@@ -1011,17 +1047,9 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         //Draws the tiled map
         drawTiledMap();
 
-        //Draws UI elements
         batch.setProjectionMatrix(uiCamera.projection);
         batch.setTransformMatrix(uiCamera.view);
         batch.begin();
-        batch.draw(dividerTexture, 92, 0, 4, WORLD_HEIGHT);
-        batch.draw(dividerTexture, 380, 0, 4, WORLD_HEIGHT);
-        drawAddOnInfo();
-        drawScore();
-        drawAddOnBar();
-        drawStats();
-
         //Draws moving objects
         for (AddOn addOn : addOns) {
 //            if(enemy.dieFlag) continue;
@@ -1029,12 +1057,22 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         }
         for (Ship enemy : enemies) {
 //            if(enemy.dieFlag) continue;
-            enemy.draw(batch);
+            if(enemy.hitbox.x > 100 && enemy.hitbox.x < 380) {enemy.draw(batch);}
+            if(enemy.hitbox.x > 100 && enemy.hitbox.x < 380) {enemy.draw(batch);}
         }
         for (Bullet bullet : projectiles) {
             bullet.draw(batch);
         }
         player.draw(batch);
+
+        //Draws UI elements
+        batch.draw(dividerTexture, 92, 0, 4, WORLD_HEIGHT);
+        batch.draw(dividerTexture, 380, 0, 4, WORLD_HEIGHT);
+        drawAddOnInfo();
+        drawScore();
+        drawAddOnBar();
+        drawStats();
+
         batch.end();
 
         //Draw open menu button
@@ -1113,24 +1151,19 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
      * Purpose: Draws the player's health and energy bar if the player has those addOns equipped
      */
     private void drawStats() {
-        if (!player.healthBarVisible) {
-            batch.draw(energyOffTexture, 10, WORLD_HEIGHT - 65, 80, 55);
-        } else {
-            batch.draw(energyOnTexture, 10, WORLD_HEIGHT - 65, 80, 55);
-            batch.draw(healthTexture, 14, WORLD_HEIGHT - 44, (float) 73 * player.health / player.maxHealth, 7);
-        }
 
-        if (!player.energyBarVisible) {
-            batch.draw(energyOffTexture, 10, WORLD_HEIGHT - 115, 80, 55);
-        } else {
-            if(player.energyBurn > 0f){
+        batch.draw(energyOnTexture, 10, WORLD_HEIGHT - 65, 80, 55);
+        batch.draw(healthTexture, 14, WORLD_HEIGHT - 44, (float) 73 * player.health / player.maxHealth, 7);
+
+
+
+        if(player.energyBurn > 0f){
                 // TODO: Burnout Energy Bar right now it just does same thing
-                batch.draw(energyOffTexture, 10, WORLD_HEIGHT - 115, 80, 55);
-                batch.draw(healthTexture, 14, WORLD_HEIGHT - 94, 73 * (float) player.energyBurn / ENERGY_BURN_TIME, 7);
-            } else {
-                batch.draw(energyOnTexture, 10, WORLD_HEIGHT - 115, 80, 55);
-                batch.draw(energyTexture, 14, WORLD_HEIGHT - 94, 73 * (float) player.energy / player.maxEnergy, 7);
-            }
+            batch.draw(energyOffTexture, 10, WORLD_HEIGHT - 115, 80, 55);
+            batch.draw(healthTexture, 14, WORLD_HEIGHT - 94, 73 * (float) player.energyBurn / ENERGY_BURN_TIME, 7);
+        } else {
+            batch.draw(energyOnTexture, 10, WORLD_HEIGHT - 115, 80, 55);
+            batch.draw(energyTexture, 14, WORLD_HEIGHT - 94, 73 * (float) player.energy / player.maxEnergy, 7);
         }
     }
 

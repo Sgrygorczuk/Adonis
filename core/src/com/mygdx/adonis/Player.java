@@ -16,7 +16,7 @@ public class Player extends Ship {
 
     public Player(TextureRegion[][] spriteSheet, Texture shield,
                   float initX, float initY) {
-        super(spriteSheet, initX, initY, Alignment.PLAYER, false);
+        super(spriteSheet, initX, initY, Alignment.PLAYER, false, 1, 0);
         this.shield = shield;
         this.shipSpeed = PLAYER_SPEED;
     }

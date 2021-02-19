@@ -22,6 +22,9 @@ import static com.mygdx.adonis.Consts.PLAYER_SPEED;
 import static com.mygdx.adonis.Consts.SHIELD_MULTIPLIER;
 import static com.mygdx.adonis.Consts.TILE_HEIGHT;
 import static com.mygdx.adonis.Consts.TILE_WIDTH;
+import static com.mygdx.adonis.Consts.WORLD_HEIGHT;
+import static com.mygdx.adonis.Direction.DOWN;
+import static com.mygdx.adonis.Direction.DOWN_RIGHT;
 
 public abstract class Ship {
     public Rectangle hitbox;
@@ -37,6 +40,7 @@ public abstract class Ship {
     public int energy;
     public int energyRecharge;
     public boolean energyBarVisible = false;
+    public int points;
 
     public int energyBarHeld = 0; // TODO: Remove once we make it unique
     public float energyBurn = 0f;
@@ -97,11 +101,13 @@ public abstract class Ship {
     private static final float FLASHING_TIME = 0.1F;
     private float flashingTimer = FLASHING_TIME;
 
-    public Ship(TextureRegion[][] spriteSheet, float initX, float initY, Alignment align, boolean enemyImageFlag) {
+    public Ship(TextureRegion[][] spriteSheet, float initX, float initY, Alignment align, boolean enemyImageFlag, float TileMultiplier,
+                int points) {
         // can multiply e.g. by 1.5, 1.2 to get more or less health
         this.align = align;
         this.maxHealth = 100;
         this.health = 100;
+        this.points = points;
 
         this.enemyImageFlag = enemyImageFlag;
 
@@ -113,7 +119,7 @@ public abstract class Ship {
         this.spriteSheet = spriteSheet;
         setUpAnimations();
 
-        this.hitbox = new Rectangle(initX, initY, TILE_WIDTH, TILE_HEIGHT);
+        this.hitbox = new Rectangle(initX, initY, TILE_WIDTH * TileMultiplier, TILE_HEIGHT * TileMultiplier);
         this.velocity = new Vector2(0, 0);
         this.addOns = new Array<>();
         this.bulletsFired = new Array<>();
@@ -129,7 +135,7 @@ public abstract class Ship {
         forwardTexture = spriteSheet[0][0];
 
         float testVar = 55;
-        dieAnimation = setUpAnimation(1/180f, 0, Animation.PlayMode.NORMAL);
+        dieAnimation = setUpAnimation(1/120f, 0, Animation.PlayMode.NORMAL);
         turnRightAnimation = setUpAnimation(1/testVar, 4, Animation.PlayMode.LOOP);
         turnRightBackAnimation = setUpAnimation(1/testVar, 4, Animation.PlayMode.LOOP_REVERSED);
         turnLeftAnimation = setUpAnimation(1/testVar, 3, Animation.PlayMode.LOOP);
@@ -207,8 +213,14 @@ public abstract class Ship {
                 }
             }
 
-            velocity.x = this.dir.getX();
-            velocity.y = this.dir.getY();
+            if(hitbox.getY() + hitbox.getHeight() < WORLD_HEIGHT) {
+                velocity.x = this.dir.getX();
+                velocity.y = this.dir.getY();
+            }
+            else{
+                velocity.x = DOWN.getX();
+                velocity.y = DOWN.getY();
+            }
 
             hitbox.x = hitbox.getX() + (velocity.x * delta * TILE_WIDTH * shipSpeed);
             hitbox.y = hitbox.getY() + (velocity.y * delta * TILE_HEIGHT * shipSpeed);
