@@ -880,6 +880,14 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
             boolean soundCheck = player.ejectSelected(8-itemSelected);
             if(soundCheck){playPowerDown();}
         }
+        if(Gdx.input.isButtonJustPressed(Input.Buttons.RIGHT)){
+            if(player.dir.getX() > 0){
+                player.setAnimationState(6);
+            }
+            else {
+                player.setAnimationState(5);
+            }
+        }
 
         //Allows user to turn on dev mode
         if (Gdx.input.isKeyJustPressed(Input.Keys.TAB)) { developerMode = !developerMode; }

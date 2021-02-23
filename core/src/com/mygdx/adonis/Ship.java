@@ -1,6 +1,5 @@
 package com.mygdx.adonis;
 
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -9,9 +8,6 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
-import sun.security.util.ArrayUtil;
-
-import static com.mygdx.adonis.Alignment.ENEMY;
 import static com.mygdx.adonis.Alignment.PLAYER;
 import static com.mygdx.adonis.Consts.ADD_ON_GROWTH;
 import static com.mygdx.adonis.Consts.BATTERY_SIZE;
@@ -24,7 +20,6 @@ import static com.mygdx.adonis.Consts.TILE_HEIGHT;
 import static com.mygdx.adonis.Consts.TILE_WIDTH;
 import static com.mygdx.adonis.Consts.WORLD_HEIGHT;
 import static com.mygdx.adonis.Direction.DOWN;
-import static com.mygdx.adonis.Direction.DOWN_RIGHT;
 
 public abstract class Ship {
     public Rectangle hitbox;
@@ -82,6 +77,7 @@ public abstract class Ship {
     protected float animationRightBackTime = 0;
     protected float animationLeftTime = 0;
     protected float animationLeftBackTime = 0;
+    protected float animationRollTime = 0;
     protected float animationDieTime = 0;
 
     public boolean dieFlag = false;
@@ -140,7 +136,8 @@ public abstract class Ship {
         turnRightBackAnimation = setUpAnimation(1/testVar, 4, Animation.PlayMode.LOOP_REVERSED);
         turnLeftAnimation = setUpAnimation(1/testVar, 3, Animation.PlayMode.LOOP);
         turnLeftBackAnimation = setUpAnimation(1/testVar, 3, Animation.PlayMode.LOOP_REVERSED);
-
+        rollLeftAnimation = setUpAnimation(1/testVar, 1, Animation.PlayMode.NORMAL);
+        rollRightAnimation = setUpAnimation(1/testVar, 2, Animation.PlayMode.NORMAL);
     }
 
     private Animation<TextureRegion> setUpAnimation(float duration, int row, Animation.PlayMode playMode){
@@ -232,7 +229,9 @@ public abstract class Ship {
 
     }
 
-    public void updateAnimationState(float delta){
+    public void setAnimationState(int animationState){this.animationState = animationState;}
+
+    private void updateAnimationState(float delta){
         switch (animationState){
             case 0:{
                 if(velocity.x > 0){
@@ -246,21 +245,18 @@ public abstract class Ship {
             break;
             }
             case 1:{
-                System.out.println("A " + turnRightAnimation.getKeyFrameIndex(animationRightTime) + " " + animationRightTime);
-                if(velocity.x > 0 && turnRightAnimation.getKeyFrameIndex(animationRightTime) == 29){
-
-                }
-                else if(velocity.x <= 0){
-                    animationState = 2;
-                    animationRightTime = 0;
-                }
-                else {
-                    animationRightTime += delta;
+                if (!(velocity.x > 0) || turnRightAnimation.getKeyFrameIndex(animationRightTime) != 29) {
+                    if(velocity.x <= 0){
+                        animationState = 2;
+                        animationRightTime = 0;
+                    }
+                    else {
+                        animationRightTime += delta;
+                    }
                 }
                 break;
             }
             case 2:{
-                System.out.println("B " + turnRightBackAnimation.getKeyFrameIndex(animationRightBackTime) + " " + animationRightBackTime);
                 if(velocity.x <= 0 && turnRightBackAnimation.getKeyFrameIndex(animationRightBackTime) == 0){
                     animationState = 0;
                     animationRightBackTime = 0;
@@ -271,21 +267,18 @@ public abstract class Ship {
                 break;
             }
             case 3:{
-                System.out.println("C " + turnLeftAnimation.getKeyFrameIndex(animationLeftTime) + " " + animationLeftTime);
-                if(velocity.x < 0 && turnLeftAnimation.getKeyFrameIndex(animationLeftTime) == 29){
-
-                }
-                else if(velocity.x >= 0){
-                    animationState = 4;
-                    animationLeftTime = 0;
-                }
-                else {
-                    animationLeftTime += delta;
+                if (!(velocity.x < 0) || turnLeftAnimation.getKeyFrameIndex(animationLeftTime) != 29) {
+                    if(velocity.x >= 0){
+                        animationState = 4;
+                        animationLeftTime = 0;
+                    }
+                    else {
+                        animationLeftTime += delta;
+                    }
                 }
                 break;
             }
             case 4:{
-                System.out.println("D " + turnLeftBackAnimation.getKeyFrameIndex(animationLeftBackTime) + " " + animationLeftBackTime);
                 if(velocity.x >= 0 && turnLeftBackAnimation.getKeyFrameIndex(animationLeftBackTime) == 0){
                     animationState = 0;
                     animationLeftBackTime= 0;
@@ -294,6 +287,24 @@ public abstract class Ship {
                     animationLeftBackTime += delta;
                 }
                 break;
+            }
+            case 5:{
+                if(rollLeftAnimation.isAnimationFinished(animationRollTime)){
+                    animationRollTime = 0;
+                    animationState = 0;
+                }
+                else{
+                    animationRollTime += delta;
+                }
+            }
+            case 6:{
+                if(rollRightAnimation.isAnimationFinished(animationRollTime)){
+                    animationRollTime = 0;
+                    animationState = 0;
+                }
+                else{
+                    animationRollTime += delta;
+                }
             }
 
             default:{
@@ -536,6 +547,12 @@ public abstract class Ship {
             }
             else if(animationState == 4){
                 currentFrame = turnLeftBackAnimation.getKeyFrame(animationLeftBackTime);
+            }
+            else if(animationState == 5){
+                currentFrame = rollLeftAnimation.getKeyFrame(animationRollTime);
+            }
+            else if(animationState == 6){
+                currentFrame = rollRightAnimation.getKeyFrame(animationRollTime);
             }
             else {
                 currentFrame = dieAnimation.getKeyFrame(animationDieTime);

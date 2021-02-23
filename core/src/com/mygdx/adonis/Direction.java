@@ -14,7 +14,9 @@ public enum Direction {
     UP_LEFT(-1 * DIAGONAL_SPEED, DIAGONAL_SPEED),
     DOWN_RIGHT(DIAGONAL_SPEED, -1 * DIAGONAL_SPEED),
     DOWN_LEFT(-1 * DIAGONAL_SPEED, -1 * DIAGONAL_SPEED),
-    NONE(0, 0);
+    NONE(0, 0),
+    DOWN_L(-0.1f, -1),
+    DOWN_R(0.1f, -1 );
 
     private final float x;
     private final float y;
