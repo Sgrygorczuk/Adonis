@@ -167,9 +167,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         showObjects();      //Sets up font and Tiled data
         showButtons();      //Sets up the buttons
         showMusic();        //Sets up music
-        if (developerMode) {
-            showRender();
-        }    //If in developer mode sets up the renders
+        //if (developerMode) {showRender();}    //If in developer mode sets up the renders
     }
 
     /**
@@ -644,12 +642,14 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
 
         clearScreen();
         draw();
+        /*
         if (developerMode) {
             renderEnemy();
             renderUser();
             renderCollectible();
             renderBackground();
         }
+         */
     }
 
     /**
@@ -890,9 +890,9 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         }
 
         //Allows user to turn on dev mode
-        if (Gdx.input.isKeyJustPressed(Input.Keys.TAB)) { developerMode = !developerMode; }
+       // if (Gdx.input.isKeyJustPressed(Input.Keys.TAB)) { developerMode = !developerMode; }
         //Give Dev actions
-        if (developerMode) { handleDevInputs(); }
+        //if (developerMode) { handleDevInputs(); }
 
     }
 
@@ -1112,9 +1112,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
             drawMenuText();
         }
 
-        if (developerMode) {
-            drawDeveloperInfo();
-        }
+        //if (developerMode) { drawDeveloperInfo(); }
 
         if(!startGame && !isPaused){drawStartGame();}
         if(isGameEnded){drawEndScreen();}
