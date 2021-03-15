@@ -231,7 +231,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         enemyLaserTexture = new TextureRegion(enemyLaserTexturePath).split(enemyLaserTexturePath.getWidth() / 2, enemyLaserTexturePath.getHeight());
 
         Texture addOnTexturePath = new Texture(Gdx.files.internal("Sprites/AddOns.png"));
-        addOnTexture = new TextureRegion(addOnTexturePath).split(addOnTexturePath.getWidth(), addOnTexturePath.getHeight() / 6);
+        addOnTexture = new TextureRegion(addOnTexturePath).split(addOnTexturePath.getWidth(), addOnTexturePath.getHeight() / 3);
 
     }
 
@@ -768,7 +768,7 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
                     this.score += enemy.points;
                 }
                 if(enemy.maxHealth == 60) {
-                    spawnAddOn(MathUtils.random(0, 4), enemy.hitbox.x + enemy.hitbox.getWidth() / 2f - ADD_ON_TILE / 2f,
+                    spawnAddOn(MathUtils.random(0, 2), enemy.hitbox.x + enemy.hitbox.getWidth() / 2f - ADD_ON_TILE / 2f,
                             enemy.hitbox.y + enemy.hitbox.height / 2f - ADD_ON_TILE / 2f);
                 }
                 enemies.removeValue(enemy, true);
@@ -982,18 +982,19 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
      * Purpose: Allows Dev to mess with addOns for the ship
      */
     private void handleDevInputs() {
+
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) {
-            player.onInstall(AddOnData.BATTERY);
+            //player.onInstall(AddOnData.BATTERY);
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) {
-            player.onInstall(AddOnData.CHARGER);
+            //player.onInstall(AddOnData.CHARGER);
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) {
-            player.onInstall(AddOnData.SHIELD);
+            //player.onInstall(AddOnData.SHIELD);
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_4)){
-            player.onInstall(AddOnData.HEALTH_BAR_GUI);
+            //player.onInstall(AddOnData.HEALTH_BAR_GUI);
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_5)) {
-            player.onInstall(AddOnData.ENERGY_BAR_GUI);
+            //player.onInstall(AddOnData.ENERGY_BAR_GUI);
         } else if (Gdx.input.isKeyJustPressed((Input.Keys.NUM_6))){
-            player.onInstall(AddOnData.WEAPON_BOOST);
+            //player.onInstall(AddOnData.WEAPON_BOOST);
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_9)) {
 
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_0)) {

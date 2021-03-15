@@ -335,16 +335,16 @@ public abstract class Ship {
         System.out.println(addOn.name());
         // TODO: install the addons - Paul
         switch (addOn) {
-            case HEALTH_BAR_GUI:
+            //case HEALTH_BAR_GUI:
                 // Allows ship to see Health Bar
-                healthBarVisible = true;
-                healthBarHeld += 1;
-                break;
-            case ENERGY_BAR_GUI:
+               // healthBarVisible = true;
+                //healthBarHeld += 1;
+                //break;
+            //case ENERGY_BAR_GUI:
                 // Allows ship to see Energy Bar
-                energyBarVisible = true;
-                energyBarHeld += 1;
-                break;
+                //energyBarVisible = true;
+                //energyBarHeld += 1;
+                //break;
             //case HEALING_STATION:
                 // Allows ship to hold and use health packs they pick up
                 //break;
@@ -355,18 +355,27 @@ public abstract class Ship {
                 // Has a shield in a certain direction of installation
                 // Shield either consumes energy while on or when it gets hit
                 hasShield = true;
-                break;
-            case BATTERY:
-                // Holds energy and lets you use weapons and upgrades that require it
                 this.maxEnergy += BATTERY_SIZE;
-                break;
-            case CHARGER:
                 this.energyRecharge *= ENERGY_RECHARGE;
                 break;
-            case WEAPON_BOOST:
-                // Upgrades the damage of weapons
+            case SPEED:
+                velocity.y += 5;
+                velocity.x += 5;
+                break;
+            case DAMAGE:
                 damage *= 2;
                 break;
+            //case BATTERY:
+                // Holds energy and lets you use weapons and upgrades that require it
+                //this.maxEnergy += BATTERY_SIZE;
+                //break;
+            //case CHARGER:
+                //this.energyRecharge *= ENERGY_RECHARGE;
+                //break;
+            //case WEAPON_BOOST:
+                // Upgrades the damage of weapons
+                //damage *= 2;
+                //break;
             //case WEAPON_UPGRADE:
                 // Upgrades the hitboxes of weapons
                 //break;
@@ -429,16 +438,16 @@ public abstract class Ship {
 
     public void destroyedPart(AddOnData addOn){
         switch (addOn) {
-            case HEALTH_BAR_GUI:
+            //case HEALTH_BAR_GUI:
                 // Removes Health Bar GUI
-                healthBarHeld -= 1;
-                if (healthBarHeld < 1) healthBarVisible = false;
-                break;
-            case ENERGY_BAR_GUI:
+                //healthBarHeld -= 1;
+                //if (healthBarHeld < 1) healthBarVisible = false;
+               // break;
+            //case ENERGY_BAR_GUI:
                 // Removes Energy Bar GUI
-                energyBarHeld -= 1;
-                if (energyBarHeld < 1) energyBarVisible = false;
-                break;
+                //energyBarHeld -= 1;
+                //if (energyBarHeld < 1) energyBarVisible = false;
+                //break;
             //case HEALING_STATION:
                 // Decrease max health kit capacity
                 //break;
@@ -446,19 +455,32 @@ public abstract class Ship {
                 // Decrease max energy kit capacity
                // break;
             case SHIELD:
-                hasShield = false;
-                break;
-            case BATTERY:
-                // Removes their max energy
+                boolean checkAddOn = false;
+                for(AddOnData addOn1: addOns){
+                    if (addOn1.getId() == 0 ){ checkAddOn = true; }
+                 }
+                hasShield = checkAddOn;
+                this.energyRecharge /= ENERGY_RECHARGE;
                 this.maxEnergy -= BATTERY_SIZE;
                 break;
-            case CHARGER:
-                this.energyRecharge /= ENERGY_RECHARGE;
+            case SPEED:
+                velocity.y -= 5;
+                velocity.x -= 5;
                 break;
-            case WEAPON_BOOST:
-                // Removes damage upgrade
+            case DAMAGE:
                 damage /= 2;
                 break;
+            //case BATTERY:
+                // Removes their max energy
+                //this.maxEnergy -= BATTERY_SIZE;
+                //break;
+            //case CHARGER:
+                //this.energyRecharge /= ENERGY_RECHARGE;
+                //break;
+            //case WEAPON_BOOST:
+                // Removes damage upgrade
+                //damage /= 2;
+                //break;
             //case WEAPON_UPGRADE:
                 // removes hitbox upgrade
                 //break;
