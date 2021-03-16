@@ -91,18 +91,19 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
 
     //Textures
     private Texture popUpTexture;                       //Pop up menu to show menu buttons and Help screen
-    private Texture backgroundUITexture;
-    private Texture skillBarTexture;
-    private Texture highlightTexture;
-    private Texture infoBoardTexture;
-    private Texture energyOnTexture;
-    private Texture energyOffTexture;
-    private Texture dividerTexture;
-    private Texture healthTexture;
-    private Texture energyTexture;
-    private Texture scoreBoardTexture;
-    private Texture shieldTexture;
+    private Texture backgroundUITexture;                //Background texture
+    private Texture skillBarTexture;                    //Texture where addOns that player picked up will show up
+    private Texture highlightTexture;                   //Texture that show's where player is looking on the skill bar
+    private Texture infoBoardTexture;                   //Background texture
+    private Texture energyOnTexture;                    //Energy UI
+    private Texture energyOffTexture;                   //Energy UI off
+    private Texture dividerTexture;                     //A texture that divides the ui form game screen
+    private Texture healthTexture;                      //Red energy for ui
+    private Texture energyTexture;                      //Blue energy for ui
+    private Texture scoreBoardTexture;                  //Area where score will be shown
+    private Texture shieldTexture;                      //Shield texture
 
+    //Sprite sheets that will be viewed
     private TextureRegion[][] playerSpriteSheet;
     private TextureRegion[][] enemyZeroSpriteSheet;
     private TextureRegion[][] enemyOneSpriteSheet;
@@ -125,16 +126,15 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
     private final String[] menuButtonText = new String[]{"Restart", "Help", "Sound Off", "Main Menu", "Sound On"};
 
     //Flags
-    private int itemSelected = 8;
-    private boolean developerMode = true;      //Developer mode shows hit boxes and phone data
-    private boolean startGame = false;
+    private int itemSelected = 8;             //How many items user can collect
+    private boolean developerMode = true;     //Developer mode shows hit boxes and phone data
+    private boolean startGame = false;        //Tells us the player clicked a button to start the game
     private boolean isPaused = false;         //Stops the game from updating
-    private boolean isGameEnded = false;            //Tells us game has been lost
-    private float sfxVolume = 1f;               //Current sfx volume
-    private boolean helpFlag = false;           //Tells us if help flag is on or off
-    boolean letGo = true;
-    String endString = "";
-    private int score = 0;
+    private boolean isGameEnded = false;      //Tells us game has been lost
+    private float sfxVolume = 1f;             //Current sfx volume
+    private boolean helpFlag = false;         //Tells us if help flag is on or off
+    String endString = "";                    //The string that will be displayed to user at end of game
+    private int score = 0;                    //User's score
 
     /*
     Input: SpaceHops
@@ -1016,7 +1016,6 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         menuButtons[NUM_BUTTONS].setVisible(true);
         switch (endType){
             case 0:{
-                //TODO add score
                 endString = addNewLine("You have won! You're score is: " + score, 15);
                 break;
             }
@@ -1119,6 +1118,9 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         batch.end();
     }
 
+    /**
+     * Drwas the prompt for user to start the game
+     */
     private void drawStartGame() {
         bitmapFont.setColor(Color.WHITE);
         //batch.draw(popUpTexture, WORLD_WIDTH / 2f - 100, WORLD_HEIGHT / 2 - 25, 200, 50);
@@ -1261,12 +1263,18 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         centerText(bitmapFont, addNewLine(description, 12), WORLD_WIDTH - 50, startPoint-100);
     }
 
+    /**
+     * Drwas the score
+     */
     private void drawScore(){
         batch.draw(scoreBoardTexture, 390, 20, 80, 20);
         bitmapFont.getData().setScale(.4f);
         centerText(bitmapFont, score + "", WORLD_WIDTH - 50, 35);
     }
 
+    /**
+     * Draws the end game menu
+     */
     private void drawEndScreen(){
         bitmapFont.setColor(Color.BLACK);
         bitmapFont.getData().setScale(.5f);
@@ -1349,6 +1357,9 @@ class MainScreen extends ScreenAdapter implements InputProcessor {
         music.dispose();
     }
 
+    /**
+     *Overwrites the mouse scroll controls
+     */
     @Override
     public boolean keyDown(int keycode) {
         return false;

@@ -11,16 +11,26 @@ import static com.mygdx.adonis.Direction.NONE;
 
 public class BossEnemy extends Ship {
 
+    /**
+     * Boss enemy that you beat at the end of the game
+     * @param spriteSheet texture
+     * @param initX position
+     * @param initY position
+     */
     public BossEnemy(TextureRegion[][] spriteSheet, float initX, float initY) {
         super(spriteSheet, initX, initY, Alignment.BOSS, true, 15f, 1000);
         this.shipSpeed = ENEMY_SPEED;
         this.velocity.y = TILE_HEIGHT;
         this.dir = NONE;
-        this.health = 500;
-        this.maxHealth = 500;
+        this.health = 1000;
+        this.maxHealth = 1000;
 
     }
 
+    /**
+     * Updates shooting and position
+     * @param delta timing var
+     */
     @Override
     public void update(float delta) {
         super.update(delta);

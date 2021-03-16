@@ -11,17 +11,16 @@ import static com.mygdx.adonis.Consts.BULLET_DRAW_OFFSET;
 import static com.mygdx.adonis.Consts.BULLET_TILE_SIZE;
 
 public class Bullet {
-    public Rectangle hitbox;
-    public Vector2 velocity;
-    public int damage;
-    public Direction dir;
+    public Rectangle hitbox; //Hit box
+    public Vector2 velocity; //Bullets velocity
+    public int damage;       //How much damage it gives out
+    public Direction dir;    //Which direction it goes
 
-    public TextureRegion[][] texture;
-    private Animation<TextureRegion> animation;
-    //Current animation frame time
-    protected float animationTime = 0;
+    public TextureRegion[][] texture;  //Texture
+    private Animation<TextureRegion> animation; //Animation
+    protected float animationTime = 0;      //Current animation frame time
 
-    public Alignment alignment;
+    public Alignment alignment; //Enemy or Player
 
     public Bullet(Alignment alignment, Direction dir, float x, float y, float xTowards, float yTowards, TextureRegion[][] texture, int damage) {
         this.alignment = alignment;
@@ -60,6 +59,10 @@ public class Bullet {
         animation.setPlayMode(Animation.PlayMode.NORMAL);
     }
 
+    /**
+     * Updates the animation and position of bullet
+     * @param delta timing var
+     */
     public void update(float delta) {
         hitbox.x += velocity.x;
         hitbox.y += velocity.y;
@@ -67,6 +70,9 @@ public class Bullet {
         animationTime += delta;
     }
 
+    /**
+     * The function that gets rid of things once bullet is dead
+     */
     public void dispose() {
 //        this.texture.dispose();
         this.alignment = null;
@@ -85,6 +91,10 @@ public class Bullet {
         shapeRenderer.rect(hitbox.x, hitbox.y, hitbox.width, hitbox.height);
     }
 
+    /**
+     * Draws the texture of the bullet
+     * @param spriteBatch where it will be drawn
+     */
     public void draw(SpriteBatch spriteBatch) {
         TextureRegion currentFrame = animation.getKeyFrame(animationTime);
         spriteBatch.draw(currentFrame, hitbox.x-BULLET_DRAW_OFFSET/2f,

@@ -12,6 +12,12 @@ import static com.mygdx.adonis.Direction.DOWN;
 
 public class CargoEnemy extends Ship {
 
+    /**
+     * Cardgo unit doesn't do much other than spawn addOns for player
+     * @param spriteSheet texture
+     * @param initX position
+     * @param initY position
+     */
     public CargoEnemy(TextureRegion[][] spriteSheet, float initX, float initY) {
         super(spriteSheet, initX, initY, Alignment.ENEMY, true, 1.4f, 20);
         this.shipSpeed = ENEMY_SPEED;
@@ -21,6 +27,10 @@ public class CargoEnemy extends Ship {
         this.maxHealth = 60;
     }
 
+    /**
+     * Update y position
+     * @param delta timing var
+     */
     @Override
     public void update(float delta) { super.update(delta); }
 }

@@ -20,6 +20,12 @@ public class BaseEnemy extends Ship {
     private static final float DIR_TIME = 61/55F;
     private float dirTimer = DIR_TIME;
 
+    /**
+     * Base enemy that the player will encounter
+     * @param spriteSheet texture
+     * @param initX position
+     * @param initY position
+     */
     public BaseEnemy(TextureRegion[][] spriteSheet, float initX, float initY) {
         super(spriteSheet, initX, initY, Alignment.ENEMY, true, 1f, 100);
         this.shipSpeed = ENEMY_SPEED;
@@ -28,6 +34,10 @@ public class BaseEnemy extends Ship {
         this.maxHealth = 20;
     }
 
+    /**
+     * Update the shooting and position
+     * @param delta timing var
+     */
     @Override
     public void update(float delta) {
         super.update(delta);
@@ -35,6 +45,10 @@ public class BaseEnemy extends Ship {
         changeDir(delta);
     }
 
+    /**
+     * Changes the direction when timer goes off
+     * @param delta timing var
+     */
     public void changeDir(float delta){
         dirTimer -= delta;
         if (dirTimer <= 0) {

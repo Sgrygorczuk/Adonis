@@ -14,8 +14,14 @@ import static com.mygdx.adonis.Direction.DOWN_RIGHT;
 
 public class DiveEnemy extends Ship {
 
-    boolean switchFlag = false;
+    boolean switchFlag = false; //Tells is to fly left and right
 
+    /**
+     * Constructor
+     * @param spriteSheet the sprite sheet
+     * @param initX position
+     * @param initY position
+     */
     public DiveEnemy(TextureRegion[][] spriteSheet, float initX, float initY) {
         super(spriteSheet, initX, initY, Alignment.ENEMY, true, 0.9f, 50);
         this.shipSpeed = ENEMY_SPEED*1.2f;
@@ -29,6 +35,10 @@ public class DiveEnemy extends Ship {
         this.maxHealth = 10;
     }
 
+    /**
+     * Update the shooting and moving of the ship
+     * @param delta timing var
+     */
     @Override
     public void update(float delta) {
         super.update(delta);
@@ -36,6 +46,9 @@ public class DiveEnemy extends Ship {
         if(!switchFlag){changeDir();}
     }
 
+    /**
+     * Checks if it should go left or right then updates the positon
+     */
     public void changeDir(){
         if(this.dir == DOWN_RIGHT && hitbox.x > WORLD_WIDTH/2f){
             this.dir = DOWN_LEFT;

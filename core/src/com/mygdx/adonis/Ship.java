@@ -22,29 +22,30 @@ import static com.mygdx.adonis.Consts.WORLD_HEIGHT;
 import static com.mygdx.adonis.Direction.DOWN;
 
 public abstract class Ship {
-    public Rectangle hitbox;
-    public Vector2 velocity;
-    public Alignment align;
 
-    public int maxHealth;
-    public int health;
+    public Rectangle hitbox;       //Object hit box
+    public Vector2 velocity;       //X and Y speeds
+    public Alignment align;        //Enemy or Player
+
+    public int maxHealth;           //Max health
+    public int health;              //Current Health
     public boolean healthBarVisible = false;
     public int healthBarHeld = 0;
 
-    public int maxEnergy;
-    public int energy;
-    public int energyRecharge;
+    public int maxEnergy;           //Max energy
+    public int energy;              //Current energy
+    public int energyRecharge;      //Energy recharge time
     public boolean energyBarVisible = false;
-    public int points;
+    public int points;              //
 
     public int energyBarHeld = 0; // TODO: Remove once we make it unique
-    public float energyBurn = 0f;
-    public boolean hasShield = false;
+    public float energyBurn = 0f;   //How fast it comes back after being used up
+    public boolean hasShield = false;   //Does player have shield
 
-    public Direction dir;
+    public Direction dir;           //Tells direction
 
-    protected Array<Bullet> bulletsFired;
-    public Array<AddOnData> addOns;
+    protected Array<Bullet> bulletsFired; //All of the bullets from the ship
+    public Array<AddOnData> addOns;      //Any add on the ship posses
 
     //Sprite sheet used
     protected TextureRegion[][] spriteSheet;
@@ -80,14 +81,14 @@ public abstract class Ship {
     protected float animationRollTime = 0;
     protected float animationDieTime = 0;
 
-    public boolean dieFlag = false;
+    public boolean dieFlag = false;  //Tells us the enemy is flying
 
-    private boolean enemyImageFlag;
+    private boolean enemyImageFlag; //Tells us it's an enemy and we should inverse the texture
 
-    public float shootTimer = 0.0f;
+    public float shootTimer = 0.0f; //Tells how often the enemy should shot
     public float shootLag = 0.15f; //Player Lag
 
-    public float shipSpeed;
+    public float shipSpeed;         //Speed multiplier
 
     //Timer counting down until player can be hit again
     private static final float INVINCIBILITY_TIME = 0.5F;
@@ -97,6 +98,16 @@ public abstract class Ship {
     private static final float FLASHING_TIME = 0.1F;
     private float flashingTimer = FLASHING_TIME;
 
+    /**
+     *
+     * @param spriteSheet texture
+     * @param initX position
+     * @param initY position
+     * @param align enemy or Player
+     * @param enemyImageFlag if enemy flip image
+     * @param TileMultiplier how big should the image be
+     * @param points the point multiplier
+     */
     public Ship(TextureRegion[][] spriteSheet, float initX, float initY, Alignment align, boolean enemyImageFlag, float TileMultiplier,
                 int points) {
         // can multiply e.g. by 1.5, 1.2 to get more or less health
@@ -140,6 +151,13 @@ public abstract class Ship {
         rollRightAnimation = setUpAnimation(1/testVar, 2, Animation.PlayMode.NORMAL);
     }
 
+    /**
+     * Sets up animation of a row from sprite sheet
+     * @param duration how long should each frame last
+     * @param row which row we animating
+     * @param playMode how should it be played
+     * @return a animation
+     */
     private Animation<TextureRegion> setUpAnimation(float duration, int row, Animation.PlayMode playMode){
         Animation<TextureRegion> animation = new Animation<>(duration, this.spriteSheet[row]);
         animation.setPlayMode(playMode);
@@ -148,10 +166,13 @@ public abstract class Ship {
 
     // collision isn't as simple as checking a single hitbox since each ship has multiple addons
     public boolean isColliding(Rectangle other) {
-        // todo addons
         return this.hitbox.overlaps(other);
     }
 
+    /**
+     * Takes damage and updates status
+     * @param amt given damage
+     */
     public void takeDamage(int amt) {
         if(!invincibilityFlag) {
             if(hasShield && energy > 0){
@@ -189,7 +210,10 @@ public abstract class Ship {
     }
 
 
-    // TODO change velocity depending on game stuff
+    /**
+     * Central update the ship method
+     * @param delta timing var
+     */
     public void update(float delta) {
 
         if (health > 0) {
@@ -229,8 +253,16 @@ public abstract class Ship {
 
     }
 
+    /**
+     * Tells us how the ship should be drawn
+     * @param animationState which state the ship animation is in
+     */
     public void setAnimationState(int animationState){this.animationState = animationState;}
 
+    /**
+     * Updates what the ship is shown to be acting like
+     * @param delta timing var
+     */
     private void updateAnimationState(float delta){
         switch (animationState){
             case 0:{
@@ -314,16 +346,31 @@ public abstract class Ship {
 
     }
 
+    /**
+     * Checks if we reached the final frame of the death animation
+     * @return is the ship done dying
+     */
     public boolean getBlowUpFlag() {
         return dieAnimation.isAnimationFinished(animationDieTime);
     }
 
+    /**
+     * changes the direction the ship is going
+     * @param dir new direction
+     */
     public void move(Direction dir) {
         this.dir = dir;
     }
 
+    /**
+     * Turn the ship to be invincible
+     */
     public void setInvincibilityFlag(){invincibilityFlag = true;}
 
+    /**
+     * Installing new addons
+     * @param addOn a given addOn
+     */
     public void onInstall(AddOnData addOn) {
         if(this.addOns.size >= 9){
             return;
@@ -391,12 +438,15 @@ public abstract class Ship {
         }
     }
 
+    /**
+     * ???
+     * @param addOn given addon
+     */
     public void onUse(AddOnData addOn) {
         switch (addOn) {
             //case GUN:
                 //System.out.println("Fire");
                 // Fire Gun
-                // TODO fix this
 //                Bullet firedBullet = new Bullet(this.align, Direction.UP, (float) this.hitbox.x, (float) this.hitbox.y);
 //                this.bulletsFired.add(firedBullet);
                 //break;
@@ -425,6 +475,10 @@ public abstract class Ship {
     }
 
 
+    /**
+     * ???
+     * @param addOn given addOn
+     */
     public void onDestroy(AddOnData addOn) {
 
         if (this.addOns.contains(addOn, true)) {
@@ -436,6 +490,10 @@ public abstract class Ship {
         destroyedPart(addOn);
     }
 
+    /**
+     * Removes the addon from the ships inventory
+     * @param addOn given addOn
+     */
     public void destroyedPart(AddOnData addOn){
         switch (addOn) {
             //case HEALTH_BAR_GUI:
@@ -496,6 +554,9 @@ public abstract class Ship {
         }
     }
 
+    /**
+     * Changes the ships data based on how many addon it has
+     */
     public void updateShipSpecs(){
         this.hitbox.width = TILE_WIDTH*(1+(ADD_ON_GROWTH*(1+this.addOns.size)));
         this.hitbox.height = TILE_HEIGHT*(1+(ADD_ON_GROWTH*(1+this.addOns.size)));
@@ -503,15 +564,29 @@ public abstract class Ship {
         this.shipSpeed = PLAYER_SPEED + ((-2.3f)*(float)(Math.log(0.5+this.addOns.size)));
     }
 
+    /**
+     * Checks if the given add on is in the array
+     * @param addOn given addOn
+     * @return if it exits
+     */
     public boolean hasAddOn(AddOnData addOn) {
         return this.addOns.contains(addOn, false);
     }
 
+    /**
+     * Returns add on at given index
+     * @param index given index
+     * @return addOn
+     */
     public AddOnData getAddOnAt(int index){
         if(index < addOns.size) return this.addOns.get(index);
         return null;
     }
 
+    /**
+     * Checks if it has a specific weapon
+     * @return if we do have that weapons
+     */
     public boolean hasWeapon() {
         for (AddOnData addOn : this.addOns) {
             if (addOn.isWeapon()) {
@@ -522,6 +597,10 @@ public abstract class Ship {
         return false;
     }
 
+    /**
+     * Update the portion and existence of the fired bullets
+     * @param delta timing var
+     */
     public void updateBullets(float delta) {
         int i = 0;
         while (i < this.bulletsFired.size) {
@@ -536,9 +615,10 @@ public abstract class Ship {
         }
     }
 
-    public void stop() {
-        this.move(Direction.NONE);
-    }
+    /**
+     * Make the ship not move in any direction
+     */
+    public void stop() { this.move(Direction.NONE); }
 
     /**
      * Input: Shaperenderer
@@ -549,6 +629,10 @@ public abstract class Ship {
         shapeRenderer.rect(hitbox.x, hitbox.y, hitbox.width, hitbox.height);
     }
 
+    /**
+     * Central drawing function for texutre
+     * @param spriteBatch where the function will be drawn
+     */
     public void draw(SpriteBatch spriteBatch) {
         if (!flashing) {
             TextureRegion currentFrame;
