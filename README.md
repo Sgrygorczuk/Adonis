@@ -1,5 +1,5 @@
 # Adonis
-![Adonis](https://img.itch.zone/aW1nLzUwNzk0NTEucG5n/original/N533fW.pngg)
+![Adonis](https://img.itch.zone/aW1nLzUwNzk0NTEucG5n/original/N533fW.png)
 
 Adonis is a shoot-em-up focused on collecting and ejecting add ons that provide great help at a great cost. You now know how much life you have left, but is it worth it being a larger target at your enemy's target? The decision is up to you. 
 Play:
